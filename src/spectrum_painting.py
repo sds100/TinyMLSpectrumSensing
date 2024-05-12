@@ -14,7 +14,7 @@ def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
     return spec
 
 
-def downsample(spectrogram: npt.NDArray[float], resolution: int) -> npt.NDArray:
+def downsample_spectrogram(spectrogram: npt.NDArray[float], resolution: int) -> npt.NDArray:
     """
     Downsample a spectrogram to a target N x N resolution.
 
@@ -32,7 +32,7 @@ def downsample(spectrogram: npt.NDArray[float], resolution: int) -> npt.NDArray:
     return downsampled_spec_values
 
 
-def augment(spectrogram: npt.NDArray[float], k: int, l: int, d: int) -> npt.NDArray[float]:
+def augment_spectrogram(spectrogram: npt.NDArray[float], k: int, l: int, d: int) -> npt.NDArray[float]:
     """
     Augment the Bluetooth and Zigbee signals by stretching them.
 
