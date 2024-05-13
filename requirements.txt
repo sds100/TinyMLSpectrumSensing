@@ -1,6 +1,6 @@
 ## The following requirements were added by pip freeze:
 jupyter==1.0.0
-tensorflow==2.16.1
+tensorflow==2.15.0
 pandas==2.2.2
 scikit-image==0.23.2
 scikit-learn
