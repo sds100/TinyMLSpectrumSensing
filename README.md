@@ -7,8 +7,9 @@ This project is split into two for the training with Python in the `training` fo
 ### Python
 
 1. Create Python 3.11 virtual environment.
-2. Install Python requirements with `pip install -r requirements.txt`
+2. Install Python requirements with `pip install -r requirements.txt`. If you want to run the TensorFlow *Lite* model on your PC then it must be Linux because there are no wheels available for macOS and Windows. The library `tflite-runtime` is commented out in the requirements.txt for this reason. The full TensorFlow model still works.
 3. For plotting TensorFlow models you also need the `graphviz` library to be installed on your system, which can be done with `brew install graphviz` or `sudo apt install graphviz`.
+4. The data for training should be put in `training/data/csv`.
 
 ### Arduino
 

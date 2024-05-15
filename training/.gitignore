@@ -1,3 +1,4 @@
 /data
 .idea
 /output
+__pycache__

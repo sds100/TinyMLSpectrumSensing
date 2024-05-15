@@ -1,13 +1,12 @@
-## The following requirements were added by pip freeze:
 jupyter==1.0.0
 tensorflow==2.15.0
-tflite-runtime==2.14.0
+# tflite-runtime==2.14.0 Running TensorFlow Lite models is only supported on Linux.
 pandas==2.2.2
 scikit-image==0.23.2
 scikit-learn
 scipy==1.13.0
 numpy==1.26.4
 matplotlib==3.8.4
-pydot
-graphviz
-pyserial
+pydot==2.0.0
+graphviz==0.20.3
+pyserial==3.5

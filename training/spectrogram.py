@@ -4,7 +4,6 @@ from typing import Iterable, List
 import numpy as np
 import numpy.typing as npt
 from scipy import signal
-from skimage.transform import downscale_local_mean
 
 
 @dataclass
@@ -16,9 +15,9 @@ class Spectrogram:
     t are an array of time intervals
     values is a 2D numpy array for the magnitudes for each frequency f at time t.
     """
-    f: [int]
-    t: [int]
-    values: npt.NDArray[float]
+    f: List[int]
+    t: List[int]
+    values: npt.NDArray[np.float32]
 
 
 def move_front_half_to_end(array: npt.NDArray) -> npt.NDArray:
@@ -58,7 +57,7 @@ def split_spectrogram(spectrogram: Spectrogram, duration: int) -> List[Spectrogr
     :param duration: The length of each sub-spectrogram
     :return: A list of sub spectrograms.
     """
-    sub_spectrograms: [Spectrogram] = []
+    sub_spectrograms: List[Spectrogram] = []
 
     start_index: int = 0
     end_index: int = duration

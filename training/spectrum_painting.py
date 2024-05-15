@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 from skimage.transform import downscale_local_mean
 
-from src.spectrogram import Spectrogram
+from spectrogram import Spectrogram
 
 
 def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
