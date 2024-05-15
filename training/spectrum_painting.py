@@ -14,7 +14,7 @@ def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
     return spec
 
 
-def downsample_spectrogram(spectrogram: npt.NDArray[float], resolution: int) -> npt.NDArray:
+def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDArray:
     """
     Downsample a spectrogram to a target N x N resolution.
 
@@ -32,7 +32,7 @@ def downsample_spectrogram(spectrogram: npt.NDArray[float], resolution: int) -> 
     return downsampled_spec_values
 
 
-def augment_spectrogram(spectrogram: npt.NDArray[float], k: int, l: int, d: int) -> npt.NDArray[float]:
+def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt.NDArray:
     """
     Augment the Bluetooth and Zigbee signals by stretching them.
 
@@ -81,12 +81,20 @@ def paint_spectrogram(original: npt.NDArray, augmented: npt.NDArray) -> npt.NDAr
     return painted_spectrogram.clip(min=0)
 
 
-def digitize_spectrogram(spectrogram: npt.NDArray[float], color_depth: int) -> npt.NDArray[int]:
+def digitize_spectrogram(spectrogram: npt.NDArray[np.float32], color_depth: int) -> npt.NDArray[np.int8]:
+    """
+    Digitize the spectrogram from a range of floating point numbers to discrete integers.
+
+    :param spectrogram: The spectrogram to digitize.
+    :param color_depth: How many discrete values one "pixel" in the spectrogram can have. Since
+                        this returns a byte array then the max value is 256.
+    
+    """
     max_value: float = spectrogram.max()
     scale: float = color_depth / max_value
     spectrogram = spectrogram.clip(0)
     scaled_spectrogram = spectrogram * scale
 
-    bins = np.arange(color_depth, dtype=int)
+    bins = np.arange(color_depth, dtype=np.int8)
     bin_indices = np.digitize(scaled_spectrogram, bins)
     return bins[bin_indices - 1]
