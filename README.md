@@ -6,8 +6,9 @@ This project is split into two for the training with Python in the `training` fo
 
 ### Python
 
-1. Install Python requirements with `pip install -r requirements.txt`
-2. For plotting TensorFlow models you also need the `graphviz` library to be installed on your system, which can be done with `brew install graphviz` or `sudo apt install graphviz`.
+1. Create Python 3.11 virtual environment.
+2. Install Python requirements with `pip install -r requirements.txt`
+3. For plotting TensorFlow models you also need the `graphviz` library to be installed on your system, which can be done with `brew install graphviz` or `sudo apt install graphviz`.
 
 ### Arduino
 
