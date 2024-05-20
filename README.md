@@ -4,9 +4,14 @@ This project is split into two for the training with Python in the `training` fo
 
 ## Setup
 
+### GPU/CUDA (optional)
+
+Make sure you have compatible versions for Python, TensorFlow, C Compiler, cuDNN and CUDA.
+See the supported dependencies table for TensorFlow here https://www.tensorflow.org/install/source#gpu.
+
 ### Python
 
-1. Create Python 3.11 virtual environment.
+1. Create Python 3.10 virtual environment.
 2. **Dependencies**:
     1. Install Python requirements with `pip install -r requirements.txt`. If you want to run the TensorFlow *Lite* model on your PC then it must be Linux because there are no wheels available for macOS and Windows. The library `tflite-runtime` is commented out in the requirements.txt for this reason. The full TensorFlow model still works.
     2. For plotting TensorFlow models you also need the `graphviz` library to be installed on your system, which can be done with `brew install graphviz` or `sudo apt install graphviz`.
