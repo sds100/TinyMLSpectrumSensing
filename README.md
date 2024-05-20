@@ -6,8 +6,10 @@ This project is split into two for the training with Python in the `training` fo
 
 ### GPU/CUDA (optional)
 
-Make sure you have compatible versions for Python, TensorFlow, C Compiler, cuDNN and CUDA.
+Uncomment the required Tensorflow packages depending on your system in `requirements.txt`.
+
 See the supported dependencies table for TensorFlow here https://www.tensorflow.org/install/source#gpu.
+Make sure you have compatible versions for Python, TensorFlow, C Compiler, cuDNN and CUDA.
 
 ### Python
 

@@ -1,7 +1,11 @@
 jupyter==1.0.0
-tensorflow==2.15.0
+tensorflow==2.14.0
+
+# GPU acceleration with Nvidia
+# tensorflow[and-cuda]==2.14.0
+
 # GPU acceleration on MacOS
-# tensorflow-macos==2.15.0
+# tensorflow-macos==2.14.0
 # tensorflow-metal==1.1.0
 
 # Running TensorFlow Lite models is only supported on Linux.
