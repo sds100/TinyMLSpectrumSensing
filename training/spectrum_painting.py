@@ -91,11 +91,10 @@ def digitize_spectrogram(spectrogram: npt.NDArray[np.float32], color_depth: int)
     :param spectrogram: The spectrogram to digitize.
     :param color_depth: How many discrete values one "pixel" in the spectrogram can have. Since
                         this returns a byte array then the max value is 256.
-    
     """
     max_value: float = spectrogram.max()
     scale: float = color_depth / max_value
-    spectrogram = spectrogram.clip(0)
+    spectrogram = spectrogram.clip(min=0)
     scaled_spectrogram = spectrogram * scale
 
     bins = np.arange(color_depth, dtype=np.int8)
