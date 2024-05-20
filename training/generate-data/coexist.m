@@ -16,12 +16,12 @@ foldername={'B','W','Z','BW','ZW','ZB','ZBW'};
 FFT=256;
 Noverlap=FFT/2;
 
-SNR=[40];
+SNR=40;
 % move the central frequency of Zigbee to different values
-ZigBee_Delta_Freq=[0];%42e6,10e6,0,-20e6,-50e6 according to 2434，2439，2444，2449
+ZigBee_Delta_Freq=0;%42e6,10e6,0,-20e6,-50e6 according to 2434，2439，2444，2449
 
 
-file=['../data/matlab'];
+file='../data/matlab';
 if ~exist(file,'dir')
     mkdir(file);
 end

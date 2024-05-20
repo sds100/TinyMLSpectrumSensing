@@ -81,26 +81,26 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function valid = imagePlusImage(images,scalars)
 
-    valid = numel(images) == 2 && numel(scalars) == 2 && ...
-        all(scalars == 1);
+valid = numel(images) == 2 && numel(scalars) == 2 && ...
+    all(scalars == 1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function valid = image1MinusImage2(images,scalars)
 
-    valid = numel(images) == 2 && numel(scalars) == 2 && ...
-        scalars(1) == 1 && scalars(2) == -1;
+valid = numel(images) == 2 && numel(scalars) == 2 && ...
+    scalars(1) == 1 && scalars(2) == -1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function valid = image2MinusImage1(images,scalars)
 
-    valid = numel(images) == 2 && numel(scalars) == 2 && ...
-        scalars(1) == -1 && scalars(2) == 1;
+valid = numel(images) == 2 && numel(scalars) == 2 && ...
+    scalars(1) == -1 && scalars(2) == 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function valid = imagePlusScalar(images,scalars)
 
-    valid = numel(images) == 1 && numel(scalars) == 2 && ...
-        scalars(1) == 1;
+valid = numel(images) == 1 && numel(scalars) == 2 && ...
+    scalars(1) == 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [images, scalars, output_class] = ParseInputs(varargin)

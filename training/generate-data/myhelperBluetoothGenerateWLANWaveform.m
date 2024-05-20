@@ -96,7 +96,7 @@ switch wlanInterferenceSource
             wlan=wlanWaveformGenerator(data,Config,"IdleTime",intervaltime,NumPackets=1);
             wlanWaveform=[wlanWaveform;wlan];
         end
-       
+        
     case 'None'
         % Add your custom signal generation code here
         channelcoding='BCC';
@@ -126,7 +126,7 @@ switch wlanInterferenceSource
             wlanWaveform=[wlanWaveform;wlan];
         end
         %%%%Zigbee生成波形
-       NumberpackageZ=300;
+        NumberpackageZ=300;
         spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
         Zn1=[1,2,3];
@@ -142,8 +142,8 @@ switch wlanInterferenceSource
             zig=[Waveform;idle];
             zigbeeWaveform=[zigbeeWaveform;zig];
         end
-
-    % WLAN signal from .bb file
+        
+        % WLAN signal from .bb file
     case 'BasebandFile'
         % Create the System Object for reading the baseband file
         bbReader = comm.BasebandFileReader('Filename', wlanBBFilename);
@@ -174,7 +174,7 @@ end
 %     % Sampling factor to match the sample rate of Bluetooth and zigbee
 %     % waveform 进行上采样
 %     samplingFactor = floor(bluetoothSampleRate/zigbeeSampleRate);
-%     
+%
 %     % Upsample the zigbee waveform to add with Bluetooth waveform
 %     filterCoeffs = rcosdesign(0.35, 4, samplingFactor);
 %     ups = upsample(zigbeeWaveform, samplingFactor);

@@ -66,8 +66,8 @@ zigbeeSampleRate = 2e6;
 
 switch wlanInterferenceSource
     case 'Zigbee'
-         %%%%Zigbee生成波形
-       NumberpackageZ=180;
+        %%%%Zigbee生成波形
+        NumberpackageZ=180;
         spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
         Zn1=[1,2,3];
@@ -86,7 +86,7 @@ switch wlanInterferenceSource
         end
     case 'None'
         %%%%Zigbee生成波形
-       NumberpackageZ=300;
+        NumberpackageZ=300;
         spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
         Zn1=[1,2,3];
@@ -102,8 +102,8 @@ switch wlanInterferenceSource
             zig=[Waveform;idle];
             zigbeeWaveform=[zigbeeWaveform;zig];
         end
-
-    % WLAN signal from .bb file
+        
+        % WLAN signal from .bb file
     case 'BasebandFile'
         % Create the System Object for reading the baseband file
         bbReader = comm.BasebandFileReader('Filename', wlanBBFilename);
@@ -118,7 +118,7 @@ switch wlanInterferenceSource
         % Update the WLAN waveform for modeling the interference
         wlanWaveform = wlanRead(1:min(bbInfo.NumSamplesInData, waveformMaxSize));
         wlanSampleRate = bbReader.SampleRate;
-    end
+end
 end
 
 % LocalWords:  WLAN wlan PSDU sps DSSS
