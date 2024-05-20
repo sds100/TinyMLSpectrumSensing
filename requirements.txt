@@ -10,3 +10,4 @@ matplotlib==3.8.4
 pydot==2.0.0
 graphviz==0.20.3
 pyserial==3.5
+seaborn==0.13.2
