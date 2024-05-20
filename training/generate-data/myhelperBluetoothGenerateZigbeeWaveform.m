@@ -67,7 +67,7 @@ zigbeeSampleRate = 2e6;
 switch wlanInterferenceSource
     case 'Zigbee'
         NumberpackageZ=180;
-        spc = 44;                            % samples per chip
+        spc = 4;                            % samples per chip
         msgLen = 8*2;                     % length in bits
         Zn1=[1,2,3];
         Zn2=4:6;
