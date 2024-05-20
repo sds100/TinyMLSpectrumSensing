@@ -15,8 +15,8 @@ class Spectrogram:
     t are an array of time intervals
     values is a 2D numpy array for the magnitudes for each frequency f at time t.
     """
-    f: List[int]
-    t: List[int]
+    f: npt.NDArray[int]
+    t: npt.NDArray[int]
     values: npt.NDArray[np.float32]
 
 
