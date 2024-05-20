@@ -1,6 +1,12 @@
 jupyter==1.0.0
 tensorflow==2.15.0
-# tflite-runtime==2.14.0 Running TensorFlow Lite models is only supported on Linux.
+# GPU acceleration on MacOS
+# tensorflow-macos==2.15.0
+# tensorflow-metal==1.1.0
+
+# Running TensorFlow Lite models is only supported on Linux.
+# tflite-runtime==2.14.0
+
 pandas==2.2.2
 scikit-image==0.23.2
 scikit-learn
@@ -10,3 +16,4 @@ matplotlib==3.8.4
 pydot==2.0.0
 graphviz==0.20.3
 pyserial==3.5
+seaborn==0.13.2
