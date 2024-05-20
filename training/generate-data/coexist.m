@@ -21,7 +21,7 @@ SNR=30;
 ZigBee_Delta_Freq=0;%42e6,10e6,0,-20e6,-50e6 according to 2434，2439，2444，2449
 
 
-file='../data/matlab';
+file='../data';
 if ~exist(file,'dir')
     mkdir(file);
 end
@@ -72,8 +72,6 @@ for B=1:length(blue_Txpower)
                         %                       figure;
                         %                       data=stft(WaveformOut,88e6,'OverlapLength',Noverlap,'FFTLength',FFT);
                         
-                        class=foldername{s};
-                        
                     case 2 %W
                         disp("Generate W scenario");
                         consig=wlanWaveform(1:len);
@@ -81,12 +79,11 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                       figure;
                         %                       stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',220,'FFTLength',512)
-                        class=foldername{s};
                     case 3 %Z
                         disp("Generate Z scenario");
                         if any(real(zigbeeWaveform))
                             %%%add frequency offset to Zigbee
-                            Freq_Sample=88e6;
+                            Freq_Sample=88e6;   
                             Simulation_Length=length(zigbeeWaveform);
                             Carrier=exp(1j*(ZigBee_Delta_Freq(delf)/Freq_Sample*(1:Simulation_Length)))';
                             zigbeeWaveformcc=zigbeeWaveform.*Carrier;
@@ -96,7 +93,6 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                          figure;
                         %                          stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',Noverlap,'FFTLength',FFT)
-                        class=[foldername{s} num2str(delf)];
                     case 4 %BW
                         disp("Generate BW scenario");
                         consig=wlanWaveform(1:len)+BlueWaveform(1:len);
@@ -104,7 +100,6 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                       figure;
                         %                       stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',Noverlap,'FFTLength',FFT)
-                        class=foldername{s};
                     case 5 % ZW
                         disp("Generate ZW scenario");
                         if any(real(zigbeeWaveform))
@@ -119,7 +114,6 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                          figure;
                         %                          stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',220,'FFTLength',512)
-                        class=[foldername{s} num2str(delf)];
                     case 6 %ZB
                         disp("Generate ZB scenario");
                         if any(real(zigbeeWaveform))
@@ -134,7 +128,6 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                          figure;
                         %                          stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',220,'FFTLength',512)
-                        class=[foldername{s} num2str(delf)];
                     case 7 %ZBW
                         disp("Generate ZBW scenario");
                         if any(real(zigbeeWaveform))
@@ -150,10 +143,16 @@ for B=1:length(blue_Txpower)
                         WaveformOut = awgn(complex(channelsig), SNR(snr),'measured');
                         %                          figure;
                         %                          stft(WaveformOut(1:200000),88e6,'Window',kaiser(256,5),'OverlapLength',220,'FFTLength',512)
-                        class=[foldername{s} num2str(delf)];
                 end
-                filename=[file '/' class '_' 'iq' '_' num2str(SNR(snr)) '_' num2str(b_Txpower) '_' num2str(w_Txpower) '_' num2str(z_Txpower) '_' '2' '.mat'];
-                save(filename,'WaveformOut');
+                class=foldername{s};
+
+                % Save as CSV
+                % filename=[file '/csv/' class '_SNR' num2str(SNR(snr)) '.csv'];
+                % writematrix(WaveformOut,filename);
+    
+                % Save as .mat file
+                filename=[file '/matlab/' class '_SNR' num2str(SNR(snr)) '.mat'];
+                save(filename, 'WaveformOut');
             end
         end
     end

@@ -66,7 +66,6 @@ zigbeeSampleRate = 2e6;
 
 switch wlanInterferenceSource
     case 'Zigbee'
-        %%%%Zigbee生成波形
         NumberpackageZ=180;
         spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
@@ -85,7 +84,6 @@ switch wlanInterferenceSource
             zigbeeWaveform=[zigbeeWaveform;zig];
         end
     case 'None'
-        %%%%Zigbee生成波形
         NumberpackageZ=300;
         spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
