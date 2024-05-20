@@ -4,7 +4,7 @@ clear;
 %add transmit power
 zig_Txpower=-46;
 wifi_Txpower=-31;
-blue_Txpower=[-42];%also can be -42,-48,-51,-54,-57
+blue_Txpower=-42;%also can be -42,-48,-51,-54,-57
 
 %add fade channel with sample rate 88MHz
 fadechannel=comm.RayleighChannel("SampleRate",88e6);
@@ -16,7 +16,7 @@ foldername={'B','W','Z','BW','ZW','ZB','ZBW'};
 FFT=256;
 Noverlap=FFT/2;
 
-SNR=40;
+SNR=30;
 % move the central frequency of Zigbee to different values
 ZigBee_Delta_Freq=0;%42e6,10e6,0,-20e6,-50e6 according to 2434，2439，2444，2449
 
