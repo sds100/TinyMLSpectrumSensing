@@ -151,7 +151,7 @@ for B=1:length(blue_Txpower)
                 % writematrix(WaveformOut,filename);
     
                 % Save as .mat file
-                filename=[file '/matlab/' class '_SNR' num2str(SNR(snr)) '.mat'];
+                filename=[file '/matlab/' 'SNR' num2str(SNR(snr)) '_' class '.mat'];
                 save(filename, 'WaveformOut');
             end
         end
