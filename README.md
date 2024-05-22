@@ -4,6 +4,10 @@ This project is split into two for the training with Python in the `training` fo
 
 ## Setup
 
+### MATLAB (optional)
+
+To generate new data you need to use MATLAB 2022b or older. In 2023 they changed the API for generating Zigbee signals and this code is not migrated.
+
 ### GPU/CUDA (optional)
 
 Uncomment the required Tensorflow packages depending on your system in `requirements.txt`.
