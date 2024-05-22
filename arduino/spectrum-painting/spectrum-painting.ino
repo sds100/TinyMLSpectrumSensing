@@ -19,7 +19,7 @@ byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 const int no_classes = 7;
 const char* labels[no_classes] = {
-  "b", "bw", "w", "z", "zb", "zw", "zbw"
+  "z", "b", "w", "bw", "zb", "zw", "zbw"
 };
 
 void setup() {
@@ -47,17 +47,29 @@ void setup() {
   TfLiteStatus allocate_status = interpreter->AllocateTensors();
 
   if (allocate_status != kTfLiteOk) {
+    Serial.println("ALLOCATE TENSORS FAILED");
     MicroPrintf("AllocateTensors() failed");
   }
 
   inputAugmented = interpreter->input(0);
   inputPainted = interpreter->input(1);
   output = interpreter->output(0);
-  delay(4000);
 }
 
 void loop() {
   unsigned long timeBegin = millis();
+
+  Serial.print("Input 1 details: type: ");
+  Serial.print(inputAugmented->type);
+  Serial.print(", shape: (");
+  for (int i = 0; i < inputAugmented->dims->size; ++i) {
+    Serial.print(inputAugmented->dims->data[i]); 
+    if (i < inputAugmented->dims->size - 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println(")");
+  Serial.println(String(inputAugmented->bytes));
 
   // Serial.print("Input Augmented details: type: ");
   // Serial.println(inputAugmented->type);
@@ -78,11 +90,11 @@ void loop() {
   // int bytesReadPainted = Serial.readBytes(inputPainted->data.raw, 27360);
 
   for (int i = 0; i < augmented_image_bytes_len; i++) {
-    inputAugmented->data.f[i] = augmented_image_bytes[i];
+    inputAugmented->data.uint8[i] = augmented_image_bytes[i];
   }
 
   for (int i = 0; i < painted_image_bytes_len; i++) {
-    inputPainted->data.f[i] = painted_image_bytes[i];
+    inputPainted->data.uint8[i] = painted_image_bytes[i];
   }
 
   // Serial.println(String(bytesRead));
@@ -99,13 +111,14 @@ void loop() {
   float highest_prob = -1.0;
 
   for (int i = 0; i < no_classes; i++) {
-    if (output->data.f[i] > highest_prob) {
-      highest_prob = output->data.f[i];
+    if (output->data.uint8[i] > highest_prob) {
+      highest_prob = output->data.uint8[i];
       index_loc_highest_prob = i;
     }
   }
 
-  Serial.println("Predicted class:");
+  Serial.print("Predicted class: ");
+  Serial.println(index_loc_highest_prob);
   Serial.println(labels[index_loc_highest_prob]);
   Serial.println("with probability:");
   Serial.println(highest_prob);

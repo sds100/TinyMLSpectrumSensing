@@ -25,9 +25,11 @@ def predict_lite_model(model: List[bytes],
                        x_painted: npt.NDArray[np.uint8]) -> int:
     x_augmented.shape += (1,)
     x_augmented = (np.expand_dims(x_augmented, 0))
+    x_augmented = x_augmented.astype(np.uint8)
 
     x_painted.shape += (1,)
     x_painted = (np.expand_dims(x_painted, 0))
+    x_painted = x_painted.astype(np.uint8)
 
     interpreter = tf.lite.Interpreter(model_content=model)
     interpreter.allocate_tensors()
