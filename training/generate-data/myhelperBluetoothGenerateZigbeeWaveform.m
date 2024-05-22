@@ -67,7 +67,7 @@ zigbeeSampleRate = 2e6;
 switch wlanInterferenceSource
     case 'Zigbee'
         NumberpackageZ=180;
-        spc = 4;                            % samples per chip
+        spc = 44;                            % samples per chip
         msgLen = 8*2;                     % length in bits
         Zn1=[1,2,3];
         Zn2=4:6;
@@ -77,8 +77,7 @@ switch wlanInterferenceSource
         for mz=1:NumberpackageZ
             Random=randi(length(Zn));
             message1 = randi([0 1], msgLen, 1);  % transmitted message
-            oqpskConfig = lrwpanOQPSKConfig(Band=2450,SamplesPerChip=spc);
-            Waveform = lrwpanWaveformGenerator(message1,oqpskConfig);
+            Waveform = lrwpan.PHYGeneratorOQPSK(message1, spc, '2450 MHz');
             idle=complex(zeros([idletimelen*Random,1]));
             zig=[Waveform;idle];
             zigbeeWaveform=[zigbeeWaveform;zig];
