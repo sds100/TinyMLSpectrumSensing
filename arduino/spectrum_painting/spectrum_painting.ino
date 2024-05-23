@@ -86,15 +86,8 @@ void loop() {
     }
   }
 
-  Serial.print("Predicted class: ");
-  Serial.println(index_loc_highest_prob);
-  Serial.println(labels[index_loc_highest_prob]);
-  Serial.println("with probability:");
-  Serial.println(highest_prob);
-
-  //execution time calculation
   unsigned long duration = timeEnd - timeBegin;
-  Serial.print("Duration (ms): ");
+
+  Serial.println(index_loc_highest_prob);
   Serial.println(duration);
-  Serial.println();
 }
