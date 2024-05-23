@@ -1,6 +1,8 @@
 #include "TensorFlowLite.h"
 
 #include "model.h"
+#include "augmented_image.h"
+#include "painted_image.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
@@ -22,14 +24,13 @@ const char* labels[no_classes] = {
 
 void setup() {
   Serial.begin(9600);
-  Serial.setTimeout(1000);
+  Serial.setTimeout(4000);
   // wait for serial initialization so printing in setup works.
-  while (!Serial)
-    ;
+  while (!Serial);
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  model = tflite::GetModel(spectrum_painting_model_tflite);
+  model = tflite::GetModel(output_spectrum_painting_model_tflite);
 
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     MicroPrintf(
@@ -57,15 +58,15 @@ void setup() {
 
 void loop() {
 
-  int inputLength = inputAugmented->bytes;
+  size_t inputLength = inputAugmented->bytes;
 
-  while(!Serial.available()) ;
-  int augmentedBytesRead = Serial.readBytes(inputAugmented->data.uint8, inputLength);
-  int paintedBytesRead = Serial.readBytes(inputPainted->data.uint8, inputLength);
+  for (int i = 0; i < output_augmented_image_bytes_len; i++) {
+    inputAugmented->data.uint8[i] = output_augmented_image_bytes[i];
+  }
 
-  // if (augmentedBytesRead != inputLength || paintedBytesRead != inputLength) {
-  //   return;
-  // }
+  for (int i = 0; i < output_painted_image_bytes_len; i++) {
+    inputPainted->data.uint8[i] = output_painted_image_bytes[i];
+  }
 
   unsigned long timeBegin = millis();
   TfLiteStatus invoke_status = interpreter->Invoke();
