@@ -9,44 +9,37 @@ from tensorflow.keras import models, layers, losses
 from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 
+def create_channel(input: layers.Input) -> layers.Layer:
+    layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu')(input)
+    layer = layers.BatchNormalization()(layer)
+    layer = layers.MaxPooling2D((2, 2))(layer)
+
+    layer = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu')(layer)
+    layer = layers.BatchNormalization()(layer)
+    layer = layers.MaxPooling2D((2, 2))(layer)
+
+    layer = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layer)
+    layer = layers.BatchNormalization()(layer)
+    layer = layers.MaxPooling2D((2, 2))(layer)
+
+    # Flatten the 3D image output to 1 dimension
+    layer = layers.Flatten()(layer)
+
+    return layer
+
+
 def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models.Model:
     # The input shape to the CNN is the height, width and number of color channels. The spectrograms
     # only have one color channel.
     input_shape = (image_shape[0], image_shape[1], 1)
 
     augmented_input = layers.Input(shape=input_shape)
-    augmented_model = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu')(augmented_input)
-    augmented_model = layers.BatchNormalization()(augmented_model)
-    augmented_model = layers.MaxPooling2D((2, 2))(augmented_model)
+    augmented_channel = create_channel(augmented_input)
 
-    augmented_model = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu')(augmented_model)
-    augmented_model = layers.BatchNormalization()(augmented_model)
-    augmented_model = layers.MaxPooling2D((2, 2))(augmented_model)
-
-    augmented_model = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(augmented_model)
-    augmented_model = layers.BatchNormalization()(augmented_model)
-    augmented_model = layers.MaxPooling2D((2, 2))(augmented_model)
-
-    # Flatten the 3D image output to 1 dimension
-    augmented_model = layers.Flatten()(augmented_model)
     painted_input = layers.Input(shape=input_shape)
-    painted_model = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu', input_shape=input_shape)(
-        painted_input)
-    painted_model = layers.BatchNormalization()(painted_model)
-    painted_model = layers.MaxPooling2D((2, 2))(painted_model)
+    painted_channel = create_channel(painted_input)
 
-    painted_model = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu')(painted_model)
-    painted_model = layers.BatchNormalization()(painted_model)
-    painted_model = layers.MaxPooling2D((2, 2))(painted_model)
-
-    painted_model = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(painted_model)
-    painted_model = layers.BatchNormalization()(painted_model)
-    painted_model = layers.MaxPooling2D((2, 2))(painted_model)
-
-    # Flatten the 3D image output to 1 dimension
-    painted_model = layers.Flatten()(painted_model)
-
-    output = layers.Concatenate()([augmented_model, painted_model])
+    output = layers.Concatenate()([augmented_channel, painted_channel])
     output = layers.Dense(64, activation='relu')(output)
 
     output = layers.Dense(label_count)(output)
