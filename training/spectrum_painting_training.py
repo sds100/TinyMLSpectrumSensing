@@ -38,11 +38,11 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, Spectrogram
     label_names: List[str] = []
 
     for (class_index, (label, spec)) in enumerate(spectrograms.items()):
-        middle: int = len(spec.values) // 2
-        start_freq: int = middle - 32
-        end_freq: int = middle + 32
-
-        spec = sp.take_frequencies(spec, start_freq, end_freq)
+        # middle: int = len(spec.values) // 2
+        # start_freq: int = middle - 64
+        # end_freq: int = middle + 64
+        # 
+        # spec = sp.take_frequencies(spec, start_freq, end_freq)
 
         slices = split_spectrogram(spec, duration=options.spectrogram_length)
 

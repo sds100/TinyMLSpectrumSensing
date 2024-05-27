@@ -10,15 +10,15 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 
 def create_channel(input: layers.Input) -> layers.Layer:
-    layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu')(input)
+    layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu')(layer)
+    layer = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(layer)
+    layer = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
@@ -103,7 +103,6 @@ def convert_to_tensorflow_lite(model: models.Model,
         painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1).take(100)
         for aug_value, painted_value in list(zip(augmented_images, painted_images)):
             # Model has only one input so each data point has one element.
-
             yield [aug_value, painted_value]
 
     # This requires TensorFlow <= 2.15.0 for it to work. See https://github.com/tensorflow/tensorflow/issues/63987

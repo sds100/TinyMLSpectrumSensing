@@ -50,8 +50,8 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
     spectrogram_copy = np.copy(spectrogram).T
     (M, N) = spectrogram_copy.shape
 
-    augmented_width = (N - l) // d + 1
-    augmented_spectrogram: np.ndarray = np.zeros(shape=(M, augmented_width), dtype=float)
+    augmented_width = ((N - l) // d) + 1
+    augmented_spectrogram: np.ndarray = np.zeros(shape=(M, augmented_width), dtype=np.float32)
 
     m = np.mean(spectrogram_copy)
 
@@ -70,7 +70,7 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
             j_augmented += 1
             j += d
 
-    return augmented_spectrogram.clip(0, 1)
+    return augmented_spectrogram.clip(min=0)
 
 
 def paint_spectrogram(original: npt.NDArray, augmented: npt.NDArray) -> npt.NDArray:
