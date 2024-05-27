@@ -10,6 +10,7 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 
 def create_channel(input: layers.Input) -> layers.Layer:
+    # Padding "same" adds zero-padding.
     layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)

@@ -38,6 +38,9 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, Spectrogram
     label_names: List[str] = []
 
     for (class_index, (label, spec)) in enumerate(spectrograms.items()):
+        # Taking the middle of the spectrogram is not needed if you use
+        # high D (step size) values.
+        
         # middle: int = len(spec.values) // 2
         # start_freq: int = middle - 64
         # end_freq: int = middle + 64
