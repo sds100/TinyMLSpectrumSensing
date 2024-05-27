@@ -11,20 +11,17 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 def create_channel(input: layers.Input) -> layers.Layer:
     # Padding "same" adds zero-padding.
-    layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu', padding='same')(input)
+    layer = layers.Conv2D(filters=16, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=8, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=8, kernel_size=(3, 3), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
-
-    # Flatten the 3D image output to 1 dimension
-    layer = layers.Flatten()(layer)
 
     return layer
 
@@ -41,7 +38,9 @@ def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models
     painted_channel = create_channel(painted_input)
 
     output = layers.Concatenate()([augmented_channel, painted_channel])
-    output = layers.Dense(64, activation='relu')(output)
+
+    # Flatten the 3D image output to 1 dimension
+    output = layers.Flatten()(output)
 
     output = layers.Dense(label_count)(output)
 
@@ -63,6 +62,7 @@ def fit_model(model: models.Model,
             # goes to teh start of the line.
             print(f"Epoch: {epoch}, Val. accuracy = {logs.get('val_accuracy')}", end="\x1b[1K\r")
 
+    early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=50)
     # convert ints to the type of int that can be used in a Tensor
     history = model.fit(x=[train_test_sets.x_train_augmented, train_test_sets.x_train_painted],
                         y=train_test_sets.y_train,
@@ -71,7 +71,7 @@ def fit_model(model: models.Model,
                             [train_test_sets.x_test_augmented, train_test_sets.x_test_painted],
                             train_test_sets.y_test),
                         verbose=0,
-                        callbacks=[CustomCallback()])
+                        callbacks=[CustomCallback(), early_stopping_callback])
 
     return history
 
