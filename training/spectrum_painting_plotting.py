@@ -35,9 +35,9 @@ def plot_confusion_matrix(y_predictions: npt.NDArray[np.uint8],
 
 def plot_train_images(images: List[npt.NDArray], labels: List[int], label_names: List[str]):
     plt.figure(figsize=(15, 20))
-    for i in range(len(images)):
+    for i in range(min(len(images), 200)):
         image = images[i]
-        plt.subplot(20, 20, i + 1)
+        plt.subplot(10, 20, i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
