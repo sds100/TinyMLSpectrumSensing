@@ -108,7 +108,7 @@ clockTicks = slotValue*2;
 % The seed value controls the pattern of random number generation. For high
 % fidelity simulation results, change the seed value and average the
 % results over multiple simulations.
-sprev = rng('default');
+sprev = rng('shuffle');
 k=1;
 BtWaveform=[];
 data=[];
