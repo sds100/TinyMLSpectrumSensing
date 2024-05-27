@@ -4,6 +4,7 @@ import keras.callbacks
 import numpy as np
 import numpy.typing as npt
 import tensorflow as tf
+import tensorflow_model_optimization as tfmot
 from tensorflow.keras import models, layers, losses
 
 from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
@@ -11,15 +12,15 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 def create_channel(input: layers.Input) -> layers.Layer:
     # Padding "same" adds zero-padding.
-    layer = layers.Conv2D(filters=16, kernel_size=(7, 7), activation='relu', padding='same')(input)
+    layer = layers.Conv2D(filters=64, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=8, kernel_size=(5, 5), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=32, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=8, kernel_size=(3, 3), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
@@ -71,7 +72,7 @@ def fit_model(model: models.Model,
                             [train_test_sets.x_test_augmented, train_test_sets.x_test_painted],
                             train_test_sets.y_test),
                         verbose=0,
-                        callbacks=[CustomCallback(), early_stopping_callback])
+                        callbacks=[CustomCallback(), early_stopping_callback],)
 
     return history
 

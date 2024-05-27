@@ -9,7 +9,8 @@ from training.spectrogram import Spectrogram, create_spectrogram
 
 def load_spectrograms(data_dir: str,
                       snr: int,
-                      sample_rate: int) -> Dict[str, Spectrogram]:
+                      sample_rate: int,
+                      count: int) -> Dict[str, Spectrogram]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -27,7 +28,7 @@ def load_spectrograms(data_dir: str,
         """
         # each complex number is in its own row and so is put in
         # its own array. 'squeeze' flattens the array.
-        return sio.loadmat(file)["WaveformOut"].squeeze()
+        return sio.loadmat(file)["WaveformOut"].squeeze()[:count]
 
     # change which signal-to-noise ratio to use. The files have to be called SNR_{snr}_{class}.mat
 
