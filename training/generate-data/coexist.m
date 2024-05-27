@@ -152,6 +152,12 @@ for B=1:length(blue_Txpower)
     
                 % Save as .mat file
                 filename=[file '/matlab/' 'SNR' num2str(SNR(snr)) '_' class '.mat'];
+
+                % only concat data if the file exists
+                if isfile(filename)
+                    old_data = load(filename);
+                    WaveformOut = [old_data.WaveformOut;WaveformOut];
+                end
                 save(filename, 'WaveformOut');
             end
         end
