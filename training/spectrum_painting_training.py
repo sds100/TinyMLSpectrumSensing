@@ -31,16 +31,23 @@ class SpectrumPaintingTrainTestSets:
 
 
 def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, Spectrogram],
-                                             options: SpectrumPaintingTrainingOptions):
-    x_train_augmented = []
-    x_train_painted = []
+                                             options: SpectrumPaintingTrainingOptions,
+                                             test_size: float = 0.3) -> SpectrumPaintingTrainTestSets:
+    """
+    Create the training, test and label sets from a list of spectrograms.
+    :param spectrograms: A dictionary that maps the class (Z, B, ZBW etc) to a spectrogram.
+    :param options: The spectrum painting parameters.
+    :param test_size: The proportion of the data to be in the test set.
+    """
+    digitized_augmented_slices: List[npt.NDArray[np.uint8]] = []
+    digitized_painted_slices: List[npt.NDArray[np.uint8]] = []
     labels: List[np.uint8] = []
     label_names: List[str] = []
 
     for (class_index, (label, spec)) in enumerate(spectrograms.items()):
         # Taking the middle of the spectrogram is not needed if you use
         # high D (step size) values.
-        
+
         # middle: int = len(spec.values) // 2
         # start_freq: int = middle - 64
         # end_freq: int = middle + 64
@@ -53,22 +60,22 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, Spectrogram
         augmented_slices = [sp.augment_spectrogram(s, options.k, options.l, options.d) for s in downsampled_slices]
 
         for s in augmented_slices:
-            x_train_augmented.append(sp.digitize_spectrogram(s, options.color_depth))
+            digitized_augmented_slices.append(sp.digitize_spectrogram(s, options.color_depth))
 
         painted_slices = [sp.paint_spectrogram(original, augmented) for (original, augmented) in
                           list(zip(downsampled_slices, augmented_slices))]
 
         for s in painted_slices:
-            x_train_painted.append(sp.digitize_spectrogram(s, options.color_depth))
+            digitized_painted_slices.append(sp.digitize_spectrogram(s, options.color_depth))
 
         for i in range(len(slices)):
             labels.append(class_index)
 
         label_names.append(label)
 
-    x_train_combined = np.stack((x_train_augmented, x_train_painted), axis=3)
+    x_train_combined = np.stack((digitized_augmented_slices, digitized_painted_slices), axis=3)
 
-    x_train, x_test, y_train, y_test = train_test_split(x_train_combined, labels, test_size=0.3, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(x_train_combined, labels, test_size=test_size, random_state=42)
 
     # for tensorflow it must be uint8 and not a Python int.
     y_train = np.asarray(y_train, dtype=np.uint8)
