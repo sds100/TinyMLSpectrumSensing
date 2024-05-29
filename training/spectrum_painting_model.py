@@ -4,7 +4,6 @@ import keras.callbacks
 import numpy as np
 import numpy.typing as npt
 import tensorflow as tf
-import tensorflow_model_optimization as tfmot
 from tensorflow.keras import models, layers, losses
 
 from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
@@ -59,9 +58,9 @@ def fit_model(model: models.Model,
 
     class CustomCallback(keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
-            # print the epoch and accuracy on the same line. The control sequence at the end
-            # goes to teh start of the line.
-            print(f"Epoch: {epoch}, Val. accuracy = {logs.get('val_accuracy')}", end="\x1b[1K\r")
+            # print the epoch and accuracy on the same line. The carriage return and empty end character
+            # are required to do this.
+            print("\r", f"Epoch: {epoch}, Val. accuracy = {logs.get('val_accuracy')}", end="")
 
     early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=50)
     # convert ints to the type of int that can be used in a Tensor
@@ -72,7 +71,7 @@ def fit_model(model: models.Model,
                             [train_test_sets.x_test_augmented, train_test_sets.x_test_painted],
                             train_test_sets.y_test),
                         verbose=0,
-                        callbacks=[CustomCallback(), early_stopping_callback],)
+                        callbacks=[CustomCallback(), early_stopping_callback], )
 
     return history
 
