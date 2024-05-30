@@ -33,16 +33,16 @@ def plot_confusion_matrix(y_predictions: npt.NDArray[np.uint8],
     plt.show()
 
 
-def plot_train_images(images: List[npt.NDArray], labels: List[int], label_names: List[str]):
-    plt.figure(figsize=(15, 20))
-    for i in range(min(len(images), 200)):
+def plot_train_images(images: List[npt.NDArray], labels: List[int], label_names: List[str], snr_list: List[int]):
+    plt.figure(figsize=(15, 15))
+    for i in range(min(len(images), 50)):
         image = images[i]
-        plt.subplot(10, 20, i + 1)
+        plt.subplot(6, 10, i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
         plt.imshow(image, cmap="viridis")
-        plt.xlabel(label_names[labels[i]])
+        plt.xlabel(f"{label_names[labels[i]]} {snr_list[i]}")
     plt.show()
 
 

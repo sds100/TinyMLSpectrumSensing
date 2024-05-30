@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 import numpy.typing as npt
@@ -8,9 +8,10 @@ from training.spectrogram import Spectrogram, create_spectrogram
 
 
 def load_spectrograms(data_dir: str,
-                      snr: int,
+                      classes: List[str],
+                      snr_list: List[int],
                       sample_rate: int,
-                      count: int) -> Dict[str, Spectrogram]:
+                      count: int) -> Dict[str, List[Spectrogram]]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -18,8 +19,13 @@ def load_spectrograms(data_dir: str,
                     the following pattern: SNR_{snr}_{class}.mat where snr is the signal-to-noise ratio
                     and class is which types of signals are present - e.g Z for Zigbee, ZW for Zigbee and WiFi.
                     The .mat files should contain one object called "WaveformOut".
-    :param snr: The signal-to-noise ratio of the data.
+    :param classes: The classes to load.
+    :param snr_list: The signal-to-noise ratios to load.
     :param sample_rate: The sample rate of the data.
+    :param count: How many lines in the input files to read from.
+
+    :return: A dictionary that maps each class to a list of spectrograms with
+             different signal-to-noise ratios.
     """
 
     def load_data_from_matlab(file: str) -> npt.NDArray[np.complex128]:
@@ -30,18 +36,14 @@ def load_spectrograms(data_dir: str,
         # its own array. 'squeeze' flattens the array.
         return sio.loadmat(file)["WaveformOut"].squeeze()[:count]
 
-    # change which signal-to-noise ratio to use. The files have to be called SNR_{snr}_{class}.mat
+    spectrograms: Dict[str, List[Spectrogram]] = {}
 
-    data: Dict[str, npt.NDArray[np.complex128]] = {
-        "z": load_data_from_matlab(f"{data_dir}/SNR{snr}_Z.mat"),
-        "b": load_data_from_matlab(f"{data_dir}/SNR{snr}_B.mat"),
-        "w": load_data_from_matlab(f"{data_dir}/SNR{snr}_W.mat"),
-        "bw": load_data_from_matlab(f"{data_dir}/SNR{snr}_BW.mat"),
-        "zb": load_data_from_matlab(f"{data_dir}/SNR{snr}_ZB.mat"),
-        "zw": load_data_from_matlab(f"{data_dir}/SNR{snr}_ZW.mat"),
-        "zbw": load_data_from_matlab(f"{data_dir}/SNR{snr}_ZBW.mat"),
-    }
+    for c in classes:
+        spectrograms[c] = []
 
-    spectrograms: Dict[str, Spectrogram] = {key: create_spectrogram(frame, sample_rate) for key, frame in data.items()}
+        for snr in snr_list:
+            data = load_data_from_matlab(f"{data_dir}/SNR{snr}_{c}.mat")
+            spectrogram = create_spectrogram(data, sample_rate, snr)
+            spectrograms[c].append(spectrogram)
 
     return spectrograms
