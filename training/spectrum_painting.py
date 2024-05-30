@@ -9,7 +9,6 @@ def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
     # for spectrum painting to work best, the WiFi signal must
     # fill the spectrogram so only take the frequencies for the
     # WiFi signal
-    spec.f = spec.f[start:end]
     spec.values = spec.values[start:end]
     return spec
 
