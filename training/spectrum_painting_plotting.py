@@ -48,7 +48,7 @@ def plot_train_images(images: List[npt.NDArray], labels: List[int], label_names:
 
 def plot_model_accuracy_epochs(model_history: History):
     plt.plot(model_history.history['accuracy'], label='Train accuracy')
-    plt.plot(model_history.history['val_accuracy'], label='Validation accuracy')
+    plt.plot(model_history.history['val_accuracy'], label='Test accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.ylim([0, 1])
