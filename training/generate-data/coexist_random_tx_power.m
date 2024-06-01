@@ -1,8 +1,8 @@
 function coexist_random_tx_power(snr, file)
     %add transmit power
-    zig_Txpower=-50;
-    wifi_Txpower=-50;
-    blue_Txpower=-57;%also can be -42,-48,-51,-54,-57
+    zig_Txpower=[-50, -40, -30];
+    wifi_Txpower=[-40, -30, -20];
+    blue_Txpower=[-42, -48, -51, -54, -57];%also can be -42,-48,-51,-54,-57
     
     %add fade channel with sample rate 88MHz
     fadechannel=comm.RayleighChannel("SampleRate",88e6);
@@ -39,20 +39,32 @@ function coexist_random_tx_power(snr, file)
     
     % limit the length
     len=min([length(wlanWaveform),length(zigbeeWaveform),length(BlueWaveform)]);
+
+    step_size = 500000;
+
+    i = 1;
+    rng();
+
+    while i < (len - step_size)
+        %confirm the transmit power
+        b_Txpower=blue_Txpower(randi(length(blue_Txpower),1));
+        z_Txpower=zig_Txpower(randi(length(zig_Txpower),1));
+        w_Txpower=wifi_Txpower(randi(length(wifi_Txpower),1));
+        
+        %turn dB to W
+        z_scale = sqrt(1e-3*10^(z_Txpower/10)/bandpower(zigbeeWaveform));
+        w_scale = sqrt(1e-3*10^(w_Txpower/10)/bandpower(wlanWaveform));
+        b_scale = sqrt(1e-3*10^(b_Txpower/10)/bandpower(BlueWaveform));
+        
+        start = i;
+        last = start + step_size;
+        zigbeeWaveform(i:last)=z_scale*zigbeeWaveform(i:last);
+        wlanWaveform(i:last)=w_scale*wlanWaveform(i:last);
+        BlueWaveform(i:last)=b_scale*BlueWaveform(i:last);
     
-    %confirm the transmit power
-    b_Txpower=blue_Txpower;
-    z_Txpower=zig_Txpower;
-    w_Txpower=wifi_Txpower;
+        i = i + step_size;
+    end
     
-    %turn dB to W
-    z_scale = sqrt(1e-3*10^(z_Txpower/10)/bandpower(zigbeeWaveform));
-    w_scale = sqrt(1e-3*10^(w_Txpower/10)/bandpower(wlanWaveform));
-    b_scale = sqrt(1e-3*10^(b_Txpower/10)/bandpower(BlueWaveform));
-    
-    zigbeeWaveform=z_scale*zigbeeWaveform;
-    wlanWaveform=w_scale*wlanWaveform;
-    BlueWaveform=b_scale*BlueWaveform;
     
     for s=1:7
         scen=[1,2,3,4,5,6,7]; %%B-1 W-2 Z-3 BW-4 ZW-5 ZB-6 ZBW-7
