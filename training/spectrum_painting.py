@@ -6,11 +6,7 @@ from spectrogram import Spectrogram
 
 
 def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
-    # for spectrum painting to work best, the WiFi signal must
-    # fill the spectrogram so only take the frequencies for the
-    # WiFi signal
-    spec.values = spec.values[start:end]
-    return spec
+    return Spectrogram(values=spec.values[start:end], snr=spec.snr)
 
 
 def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDArray:

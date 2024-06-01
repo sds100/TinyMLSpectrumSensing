@@ -1,4 +1,4 @@
-function coexist(snr)
+function coexist(snr, file)
     %add transmit power
     zig_Txpower=-46;
     wifi_Txpower=-31;
@@ -19,9 +19,7 @@ function coexist(snr)
     % move the central frequency of Zigbee to different values
     ZigBee_Delta_Freq=0;%42e6,10e6,0,-20e6,-50e6 according to 2434，2439，2444，2449
     
-    
-    file='../data';
-    if ~exist(file,'dir')
+    if ~exist(file, 'dir')
         mkdir(file);
     end
     
@@ -148,7 +146,7 @@ function coexist(snr)
                 % writematrix(WaveformOut,filename);
     
                 % Save as .mat file
-                filename=[file '/matlab/' 'SNR' num2str(SNR) '_'  class '.mat'];
+                filename=[file '/' 'SNR' num2str(SNR) '_'  class '.mat'];
     
                 % only concat data if the file exists
                 if isfile(filename)

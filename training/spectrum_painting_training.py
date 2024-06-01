@@ -53,7 +53,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
     """
     Create the training, test and label sets from a list of spectrograms.
     :param spectrograms: A dictionary that maps the class (Z, B, ZBW etc) to spectrograms with different
-                        signal-to-noise ratios..
+                        signal-to-noise ratios.
     :param options: The spectrum painting parameters.
     :param test_size: The proportion of the data to be in the test set.
     """
@@ -64,18 +64,18 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
     snr_list: List[int] = []
 
     for (class_index, (label, spectrogram_list)) in enumerate(spectrograms.items()):
-        # Taking the middle of the spectrogram is not needed if you use
-        # high D (step size) values. The reason why you may need it for small step
-        # sizes is that for painting to remove the WiFi signals, they must fill the
-        # entire width of the spectrogram.
-
-        # middle: int = len(spec.values) // 2
-        # start_freq: int = middle - 64
-        # end_freq: int = middle + 64
-        # 
-        # spec = sp.take_frequencies(spec, start_freq, end_freq)
-
         for spec in spectrogram_list:
+            # Taking the middle of the spectrogram is not needed if you use
+            # high D (step size) values. The reason why you may need it for small step
+            # sizes is that for painting to remove the WiFi signals, they must fill the
+            # entire width of the spectrogram.
+
+            # middle: int = len(spec.values) // 2
+            # start_freq: int = middle - 32
+            # end_freq: int = middle + 32
+            # 
+            # spec = sp.take_frequencies(spec, start_freq, end_freq)
+
             slices = split_spectrogram(spec, duration=options.spectrogram_length)
 
             for s in slices:
