@@ -1,8 +1,8 @@
 function coexist(snr, file)
     %add transmit power
-    zig_Txpower=-46;
-    wifi_Txpower=-31;
-    blue_Txpower=-42;%also can be -42,-48,-51,-54,-57
+    zig_Txpower=-50;
+    wifi_Txpower=-50;
+    blue_Txpower=-57;%also can be -42,-48,-51,-54,-57
     
     %add fade channel with sample rate 88MHz
     fadechannel=comm.RayleighChannel("SampleRate",88e6);
