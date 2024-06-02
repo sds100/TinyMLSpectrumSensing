@@ -38,11 +38,11 @@ def create_augmented_painted_images(spectrogram: Spectrogram,
                                     options: SpectrumPaintingTrainingOptions) -> (
         npt.NDArray[np.uint8], npt.NDArray[np.uint8]):
     downsampled = sp.downsample_spectrogram(spectrogram.values, options.downsample_resolution)
-    augmented = sp.augment_spectrogram(downsampled, options.k, options.l, options.d)
-    digitized_augmented = sp.digitize_spectrogram(augmented, options.color_depth)
+    # augmented = sp.augment_spectrogram(downsampled, options.k, options.l, options.d)
+    digitized_augmented = sp.digitize_spectrogram(downsampled, options.color_depth)
 
-    painted = sp.paint_spectrogram(downsampled, augmented)
-    digitized_painted = sp.digitize_spectrogram(painted, options.color_depth)
+    # painted = sp.paint_spectrogram(downsampled, augmented)
+    digitized_painted = sp.digitize_spectrogram(downsampled, options.color_depth)
 
     return digitized_augmented, digitized_painted
 
@@ -93,7 +93,8 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
 
     x_train, x_test, labels_snr_train, labels_snr_test = train_test_split(x_combined,
                                                                           labels_snr_combined,
-                                                                          test_size=test_size, random_state=42)
+                                                                          test_size=test_size,
+                                                                          random_state=42)
 
     y_train = labels_snr_train[:, 0]
     snr_train = labels_snr_train[:, 1]

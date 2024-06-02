@@ -51,7 +51,8 @@ def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models
 
 def fit_model(model: models.Model,
               train_test_sets: SpectrumPaintingTrainTestSets,
-              epochs: int):
+              epochs: int,
+              early_stopping_patience: int):
     model.compile(optimizer='adam',
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
@@ -62,7 +63,7 @@ def fit_model(model: models.Model,
             # are required to do this.
             print("\r", f"Epoch: {epoch}, Val. accuracy = {logs.get('val_accuracy')}", end="")
 
-    early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=50)
+    early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=early_stopping_patience)
     # convert ints to the type of int that can be used in a Tensor
     history = model.fit(x=[train_test_sets.x_train_augmented],
                         y=train_test_sets.y_train,

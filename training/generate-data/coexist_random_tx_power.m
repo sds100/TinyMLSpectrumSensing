@@ -1,8 +1,11 @@
 function coexist_random_tx_power(snr, file)
     %add transmit power
-    zig_Txpower=[-50, -40, -30];
-    wifi_Txpower=[-40, -30, -20];
-    blue_Txpower=[-42, -48, -51, -54, -57];%also can be -42,-48,-51,-54,-57
+    zig_Txpower=-46;
+    wifi_Txpower=-31;
+    blue_Txpower=-42;%also can be -42,-48,-51,-54,-57
+%     zig_Txpower=[-51, -46, -41];
+%     wifi_Txpower=[-36, -31, -26];
+%     blue_Txpower=[-42, -48, -51, -54, -57];%also can be -42,-48,-51,-54,-57
     
     %add fade channel with sample rate 88MHz
     fadechannel=comm.RayleighChannel("SampleRate",88e6);
@@ -52,9 +55,9 @@ function coexist_random_tx_power(snr, file)
         w_Txpower=wifi_Txpower(randi(length(wifi_Txpower),1));
         
         %turn dB to W
+        b_scale = sqrt(1e-3*10^(b_Txpower/10)/bandpower(BlueWaveform));
         z_scale = sqrt(1e-3*10^(z_Txpower/10)/bandpower(zigbeeWaveform));
         w_scale = sqrt(1e-3*10^(w_Txpower/10)/bandpower(wlanWaveform));
-        b_scale = sqrt(1e-3*10^(b_Txpower/10)/bandpower(BlueWaveform));
         
         start = i;
         last = start + step_size;
