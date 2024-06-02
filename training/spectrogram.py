@@ -26,7 +26,7 @@ def move_front_half_to_end(array: npt.NDArray) -> npt.NDArray:
     return np.concatenate((array[n // 2:], array[:n // 2]))
 
 
-def create_spectrogram(x: Iterable, fs: int, snr: int) -> Spectrogram:
+def create_spectrogram(x: Iterable, fs: int, snr: int, window_length: int) -> Spectrogram:
     """
     Create a spectrogram of a signal.
     :param x: The signal
@@ -37,7 +37,7 @@ def create_spectrogram(x: Iterable, fs: int, snr: int) -> Spectrogram:
 
     # Calculate Short Time Fourier Transform of the signal.
     # return_one_sided is needed because the data is complex
-    f, t, Zxx = signal.stft(x=x, fs=fs, return_onesided=False)
+    f, t, Zxx = signal.stft(x=x, fs=fs, return_onesided=False, nperseg=window_length)
 
     # A spectrogram is the absolute value of the STFT and then squared.
     Zxx_abs = (np.abs(Zxx) ** 2)
