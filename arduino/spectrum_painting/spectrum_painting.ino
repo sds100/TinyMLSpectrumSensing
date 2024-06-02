@@ -14,7 +14,7 @@ TfLiteTensor* inputAugmented = nullptr;
 TfLiteTensor* inputPainted = nullptr;
 TfLiteTensor* output = nullptr;
 
-constexpr int tensor_arena_size = 150 * 1024;
+constexpr int tensor_arena_size = 50 * 1024;
 byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 const int no_classes = 7;
@@ -52,7 +52,7 @@ void setup() {
   }
 
   inputAugmented = interpreter->input(0);
-  inputPainted = interpreter->input(1);
+//   inputPainted = interpreter->input(1);
   output = interpreter->output(0);
 }
 
@@ -64,9 +64,9 @@ void loop() {
     inputAugmented->data.uint8[i] = output_augmented_image_bytes[i];
   }
 
-  for (int i = 0; i < output_painted_image_bytes_len; i++) {
-    inputPainted->data.uint8[i] = output_painted_image_bytes[i];
-  }
+//   for (int i = 0; i < output_painted_image_bytes_len; i++) {
+//     inputPainted->data.uint8[i] = output_painted_image_bytes[i];
+//   }
 
   unsigned long timeBegin = millis();
   TfLiteStatus invoke_status = interpreter->Invoke();

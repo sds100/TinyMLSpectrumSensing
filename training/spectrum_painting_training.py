@@ -93,8 +93,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
 
     x_train, x_test, labels_snr_train, labels_snr_test = train_test_split(x_combined,
                                                                           labels_snr_combined,
-                                                                          test_size=test_size,
-                                                                          random_state=42)
+                                                                          test_size=test_size)
 
     y_train = labels_snr_train[:, 0]
     snr_train = labels_snr_train[:, 1]
