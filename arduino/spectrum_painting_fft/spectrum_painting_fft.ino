@@ -95,7 +95,7 @@ void loop() {
       float sum = 0;
 
       for (int k = 0; k < scaleFactor; k++){
-        sum += spectrogram[((start + k) * NFFT) + k + j];
+        sum += spectrogram[((start + k) * NFFT) + j];
       }
 
       downsampled[(i * TARGET_RESOLUTION) + j] = sum / scaleFactor;
