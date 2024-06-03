@@ -5,7 +5,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 64;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 256;
+const int NUM_WINDOWS = 128;
 const int TARGET_RESOLUTION = 64;
 
 unsigned int sampling_period_us;
@@ -66,10 +66,21 @@ void loop() {
     // FFT.complexToMagnitude();                                  // Compute magnitudes
 
     // Send results over serial
-    for (int i = 0; i < NFFT; i++) {  // Only output the first half of the FFT results (real frequency components)
+    int middle = NFFT / 2;
+
+    // I'm not sure why but for my training data, computing the FFT puts
+    // outputs the data in the wrong order. The first half of the spectrogram
+    // comes out on the second half, and vice versa.
+    for (int i = middle; i < NFFT; i++){
       float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
 
-      spectrogram[(w * NFFT) + i] = magnitude;
+      spectrogram[(w * NFFT) + (i - middle)] = magnitude;
+    }
+
+    for (int i = 0; i < middle; i++){
+      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+
+      spectrogram[(w * NFFT) + (i + middle)] = magnitude;
     }
   }
 
@@ -82,7 +93,7 @@ void loop() {
       float sum = 0;
 
       for (int k = 0; k < scaleFactor; k++){
-        sum += spectrogram[((start + k) * NFFT) + j];
+        sum += spectrogram[((start + k) * NFFT) + k + j];
       }
 
       downsampled[(i * TARGET_RESOLUTION) + j] = sum / scaleFactor;

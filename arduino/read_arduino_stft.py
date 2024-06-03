@@ -26,8 +26,6 @@ def read_data():
 
         spectrogram_data.append(magnitudes)
 
-    spectrogram_data = move_front_half_to_end(np.asarray(spectrogram_data).T)
-
     return spectrogram_data
 
 
@@ -47,6 +45,5 @@ duration = int(ser.readline().strip())
 print(f"Duration = {duration} ms")
 # data = move_front_half_to_end(data.T)
 
-print(data.shape)
 # Plot the spectrogram
 plot_spectrogram(data)
