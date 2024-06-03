@@ -15,7 +15,9 @@ data = data[:SAMPLES * NUM_WINDOWS]
 
 fs = 88000000
 
-data_scale_factor: float = 50000.0
+max_value = np.max(data).real
+
+data_scale_factor: float = 128 / max_value
 data = data * data_scale_factor
 
 real_list: List[str] = []
