@@ -3,25 +3,22 @@
 #include "kiss_fft.h"
 
 const uint16_t SAMPLES = 256;
-const uint16_t NFFT = SAMPLES;
+const uint16_t NFFT = 64;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 100;
+const int NUM_WINDOWS = 50;
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
 
-float vReal[SAMPLES];  // Real part
-float vImag[SAMPLES];  // Imaginary part (all zeros for I/Q data)
-
 kiss_fft_cfg cfg;
-kiss_fft_cpx in[NFFT];
+kiss_fft_cpx in[SAMPLES];
 kiss_fft_cpx out[NFFT];
 
 // Example I/Q data (replace this with your actual data)
 // For the sake of this example, we'll just simulate some data.
 // float iqData[NUM_WINDOWS][SAMPLES][2];
 
-float spectrogram[NUM_WINDOWS * SAMPLES];
+float spectrogram[NFFT * NUM_WINDOWS];
 
 void setup() {
   Serial.begin(115200);
@@ -50,9 +47,11 @@ void loop() {
     for (int i = 0; i < SAMPLES; i++) {
       // vReal[i] = real[w + i];  // Real part (I)
       // vImag[i] = imag[w + i];  // Imaginary part (Q)
- 
-      in[i].r = real[(w * SAMPLES) + i];
-      in[i].i = imag[(w * SAMPLES) + i];
+      int memIndex = (w * SAMPLES) + i;
+
+      // Serial.print("Read index " + memIndex);
+      in[i].r = pgm_read_float(real + memIndex);
+      in[i].i = pgm_read_float(imag + memIndex);
     }
     
     kiss_fft(cfg, in, out);
@@ -65,10 +64,10 @@ void loop() {
     // FFT.complexToMagnitude();                                  // Compute magnitudes
 
     // Send results over serial
-    for (int i = 0; i < SAMPLES; i++) {  // Only output the first half of the FFT results (real frequency components)
+    for (int i = 0; i < NFFT; i++) {  // Only output the first half of the FFT results (real frequency components)
       float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
 
-      spectrogram[(w * SAMPLES) + i] = magnitude;
+      spectrogram[(w * NFFT) + i] = magnitude;
     }
   }
 
@@ -76,10 +75,10 @@ void loop() {
   unsigned long duration = timeEnd - timeBegin;
 
   for (int w = 0; w < NUM_WINDOWS; w++){
-    for (int i = 0; i < SAMPLES; i++){
-      Serial.print(spectrogram[(w * SAMPLES) + i]);
+    for (int i = 0; i < NFFT; i++){
+      Serial.print(spectrogram[(w * NFFT) + i]);
 
-      if (i < (SAMPLES) - 1) {
+      if (i < (NFFT) - 1) {
         Serial.print(",");
       }
     }
