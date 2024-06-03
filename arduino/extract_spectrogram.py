@@ -10,7 +10,7 @@ from training.spectrogram import move_front_half_to_end
 file = "../../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex128] = np.load(file)
 
-NUM_WINDOWS = 50
+NUM_WINDOWS = 400
 SAMPLES = 256
 data = data[:SAMPLES * NUM_WINDOWS]
 
@@ -55,6 +55,8 @@ for w in range(NUM_WINDOWS):
     spectrogram_data.append(result)
 
 spectrogram_data = move_front_half_to_end(np.asarray(spectrogram_data).T)
+
+
 
 # f, t, Zxx = signal.stft(x=data, fs=fs, return_onesided=False, window="hamming", nperseg=64, noverlap=0)
 # Zxx = move_front_half_to_end(Zxx)

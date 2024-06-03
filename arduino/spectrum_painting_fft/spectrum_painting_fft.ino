@@ -5,7 +5,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 64;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 50;
+const int NUM_WINDOWS = 400;
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
