@@ -5,7 +5,8 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 64;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 400;
+const int NUM_WINDOWS = 256;
+const int TARGET_RESOLUTION = 64;
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
@@ -19,6 +20,7 @@ kiss_fft_cpx out[NFFT];
 // float iqData[NUM_WINDOWS][SAMPLES][2];
 
 float spectrogram[NFFT * NUM_WINDOWS];
+float downsampled[NFFT * TARGET_RESOLUTION];
 
 void setup() {
   Serial.begin(115200);
@@ -71,12 +73,28 @@ void loop() {
     }
   }
 
+  int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
+
+  for (int i = 0; i < TARGET_RESOLUTION; i++){
+    int start = i * scaleFactor;
+
+    for (int j = 0; j < NFFT; j++){
+      float sum = 0;
+
+      for (int k = 0; k < scaleFactor; k++){
+        sum += spectrogram[((start + k) * NFFT) + j];
+      }
+
+      downsampled[(i * TARGET_RESOLUTION) + j] = sum / scaleFactor;
+    }
+  }
+
   unsigned long timeEnd = millis(); 
   unsigned long duration = timeEnd - timeBegin;
 
-  for (int w = 0; w < NUM_WINDOWS; w++){
+  for (int w = 0; w < TARGET_RESOLUTION; w++){
     for (int i = 0; i < NFFT; i++){
-      Serial.print(spectrogram[(w * NFFT) + i]);
+      Serial.print(downsampled[(w * NFFT) + i]);
 
       if (i < (NFFT) - 1) {
         Serial.print(",");

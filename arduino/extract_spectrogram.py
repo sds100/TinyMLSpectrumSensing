@@ -5,13 +5,12 @@ import numpy.typing as npt
 from matplotlib import pyplot as plt
 from scipy.fft import fft
 
-from training.spectrogram import move_front_half_to_end
-
 file = "../../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex128] = np.load(file)
 
-NUM_WINDOWS = 400
+NUM_WINDOWS = 256
 SAMPLES = 256
+NFFT = 64
 data = data[:SAMPLES * NUM_WINDOWS]
 
 fs = 88000000
@@ -49,14 +48,35 @@ for w in range(NUM_WINDOWS):
 
     fft_input = np.asarray(fft_input)
 
-    result = fft(fft_input, norm="backward", n=64)
+    result = fft(fft_input, norm="backward", n=NFFT)
+
     result = np.abs(result)
 
-    spectrogram_data.append(result)
+    middle = len(result) // 2
 
-spectrogram_data = move_front_half_to_end(np.asarray(spectrogram_data).T)
+    result = np.concatenate((result[middle:], result[:middle]))
 
+    spectrogram_data.append(list(result))
 
+downsampled: List[List[float]] = []
+
+target_resolution = 64
+scale_factor = NUM_WINDOWS // target_resolution
+
+for i in range(target_resolution):
+    start = i * scale_factor
+
+    row = []
+
+    for j in range(NFFT):
+        col_sum = 0
+
+        for k in range(scale_factor):
+            col_sum = col_sum + spectrogram_data[start + k][j]
+
+        row.append(col_sum / scale_factor)
+
+    downsampled.append(row)
 
 # f, t, Zxx = signal.stft(x=data, fs=fs, return_onesided=False, window="hamming", nperseg=64, noverlap=0)
 # Zxx = move_front_half_to_end(Zxx)
@@ -66,7 +86,7 @@ spectrogram_data = move_front_half_to_end(np.asarray(spectrogram_data).T)
 # # Zxx = fft(data)
 # Zxx_abs = (np.abs(Zxx) ** 2)
 
-plt.imshow(spectrogram_data, aspect='auto', origin='lower', cmap='viridis')
+plt.imshow(downsampled, aspect='auto', origin='lower', cmap='viridis')
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')

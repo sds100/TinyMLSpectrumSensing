@@ -7,12 +7,13 @@ from training.spectrogram import move_front_half_to_end
 # Configure the serial port to which the Arduino is connected
 ser = serial.Serial('/dev/cu.usbmodem2101', 115200, timeout=3000)
 
-NUM_WINDOWS = 400
+# The number of rows being outputted by the arduino
+OUTPUT_LENGTH = 64
 
 
 def read_data():
     spectrogram_data = []
-    for _ in range(NUM_WINDOWS):
+    for _ in range(OUTPUT_LENGTH):
         real_line = ser.readline().decode('utf-8').strip()
         # imag_line = ser.readline().decode('utf-8').strip()
         magnitudes = list(map(float, real_line.split(',')))
