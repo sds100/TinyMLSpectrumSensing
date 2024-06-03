@@ -21,6 +21,8 @@ kiss_fft_cpx out[NFFT];
 // For the sake of this example, we'll just simulate some data.
 // float iqData[NUM_WINDOWS][SAMPLES][2];
 
+float spectrogram[NUM_WINDOWS * SAMPLES];
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -66,8 +68,16 @@ void loop() {
     for (int i = 0; i < SAMPLES; i++) {  // Only output the first half of the FFT results (real frequency components)
       float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
 
-      // Serial.print(vReal[i], 8);             // Adjust precision as needed
-      Serial.print(magnitude);
+      spectrogram[(w * SAMPLES) + i] = magnitude;
+    }
+  }
+
+  unsigned long timeEnd = millis(); 
+  unsigned long duration = timeEnd - timeBegin;
+
+  for (int w = 0; w < NUM_WINDOWS; w++){
+    for (int i = 0; i < SAMPLES; i++){
+      Serial.print(spectrogram[(w * SAMPLES) + i]);
 
       if (i < (SAMPLES) - 1) {
         Serial.print(",");
@@ -77,8 +87,6 @@ void loop() {
     Serial.println();
   }
 
-  unsigned long timeEnd = millis(); 
-  unsigned long duration = timeEnd - timeBegin;
 
   Serial.println(duration);
 
