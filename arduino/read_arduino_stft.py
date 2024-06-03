@@ -1,33 +1,50 @@
-import serial
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import serial
+
+from training.spectrogram import move_front_half_to_end
 
 # Configure the serial port to which the Arduino is connected
-ser = serial.Serial('/dev/cu.usbmodem2101', 115200, timeout=3000)  # Adjust 'COM3' to your serial port
+ser = serial.Serial('/dev/cu.usbmodem2101', 115200, timeout=3000)
 
-NUM_WINDOWS = 10
-SAMPLES = 64
+NUM_WINDOWS = 100
+SAMPLES = 256
+
 
 def read_data():
     spectrogram_data = []
     for _ in range(NUM_WINDOWS):
-        line = ser.readline().decode('utf-8').strip()
-        magnitudes = list(map(float, line.split(',')))
+        real_line = ser.readline().decode('utf-8').strip()
+        # imag_line = ser.readline().decode('utf-8').strip()
+        magnitudes = list(map(float, real_line.split(',')))
+        # imags = list(map(float, imag_line.split(',')))
+
+        # magnitudes = []
+        # 
+        # for (r, i) in list(zip(reals, imags)):
+        #     magnitudes.append(np.abs(complex(r, i)))
+
         spectrogram_data.append(magnitudes)
-        
-    print(spectrogram_data)
-    return np.array(spectrogram_data)
+
+    spectrogram_data = move_front_half_to_end(np.asarray(spectrogram_data).T)
+
+    return spectrogram_data
+
 
 def plot_spectrogram(data):
-    plt.imshow(data.T, aspect='auto', origin='lower', cmap='viridis', extent=[0, NUM_WINDOWS, 0, SAMPLES / 2])
+    # data = move_front_half_to_end(data.T)
+    plt.imshow(data, aspect='auto', origin='lower', cmap='viridis')
     plt.colorbar(label='Magnitude')
     plt.xlabel('Time Window')
     plt.ylabel('Frequency Bin')
-    plt.title('Spectrogram')
+    plt.title('Spectrogram Arduino')
     plt.show()
+
 
 # Read the data from the serial port
 data = read_data()
+# data = move_front_half_to_end(data.T)
+
 print(data.shape)
 # Plot the spectrogram
 plot_spectrogram(data)

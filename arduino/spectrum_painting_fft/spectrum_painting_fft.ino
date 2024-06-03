@@ -1,17 +1,21 @@
 #include <arduinoFFT.h>
 #include "data.h"
+#include "kiss_fft.h"
 
-const uint16_t SAMPLES = 64;
-const float SAMPLING_FREQUENCY = 20000000;
-const int NUM_WINDOWS = 10;
+const uint16_t SAMPLES = 256;
+const uint16_t NFFT = SAMPLES;
+const float SAMPLING_FREQUENCY = 88000000;
+const int NUM_WINDOWS = 100;
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
 
-// float vReal[SAMPLES]; // Real part
-// float vImag[SAMPLES]; // Imaginary part (all zeros for I/Q data)
+float vReal[SAMPLES];  // Real part
+float vImag[SAMPLES];  // Imaginary part (all zeros for I/Q data)
 
-ArduinoFFT<float> FFT = ArduinoFFT<float>(real, imag, SAMPLES, SAMPLING_FREQUENCY); /* Create FFT object */
+kiss_fft_cfg cfg;
+kiss_fft_cpx in[NFFT];
+kiss_fft_cpx out[NFFT];
 
 // Example I/Q data (replace this with your actual data)
 // For the sake of this example, we'll just simulate some data.
@@ -19,9 +23,10 @@ ArduinoFFT<float> FFT = ArduinoFFT<float>(real, imag, SAMPLES, SAMPLING_FREQUENC
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial);
+  while (!Serial)
+    ;
 
-  sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
+  // sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
 
   // Simulate I/Q data (replace with actual I/Q data collection)
   // for (int w = 0; w < NUM_WINDOWS; w++) {
@@ -34,27 +39,44 @@ void setup() {
 
 void loop() {
   delay(2000);
-    // Collect data and perform FFT for each window
-  for (int w = 0; w < NUM_WINDOWS; w++) {
-    // for (int i = 0; i < SAMPLES; i++) {
-    //   vReal[i] = iqData[w][i][0];  // Real part (I)
-    //   vImag[i] = iqData[w][i][1];  // Imaginary part (Q)
-    // }
+  kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, 0, 0);
 
-    // Perform FFT
-    FFT.windowing(real, SAMPLES, FFTWindow::Hann, FFTDirection::Forward);  // Apply window function (Hamming)
-    FFT.compute(real, imag, SAMPLES, FFTDirection::Forward);                  // Compute FFT
-    FFT.complexToMagnitude(real, imag, SAMPLES);                    // Compute magnitudes
+  // Collect data and perform FFT for each window
+  for (int w = 0; w < NUM_WINDOWS; w++) {
+    for (int i = 0; i < SAMPLES; i++) {
+      // vReal[i] = real[w + i];  // Real part (I)
+      // vImag[i] = imag[w + i];  // Imaginary part (Q)
+ 
+      in[i].r = real[(w * SAMPLES) + i];
+      in[i].i = imag[(w * SAMPLES) + i];
+    }
+    
+    kiss_fft(cfg, in, out);
+
+    // ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY, true); /* Create FFT object */
+
+    // // Perform FFT
+    // FFT.windowing(FFTWindow::Hamming, FFTDirection::Forward);  // Apply window function (Hamming)
+    // FFT.compute(FFTDirection::Forward);                        // Compute FFT
+    // FFT.complexToMagnitude();                                  // Compute magnitudes
 
     // Send results over serial
-    for (int i = 0; i < (SAMPLES / 2); i++) {  // Only output the first half of the FFT results (real frequency components)
-      Serial.print(real[i], 8);               // Adjust precision as needed
+    for (int i = 0; i < SAMPLES; i++) {  // Only output the first half of the FFT results (real frequency components)
+      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+
+      // Serial.print(vReal[i], 8);             // Adjust precision as needed
+      Serial.print(magnitude);
+
       if (i < (SAMPLES) - 1) {
         Serial.print(",");
       }
     }
+
     Serial.println();
+
+    free(cfg);
   }
 
-  while (true);
+  while (true)
+    ;
 }
