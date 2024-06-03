@@ -43,6 +43,8 @@ def plot_spectrogram(data):
 
 # Read the data from the serial port
 data = read_data()
+duration = int(ser.readline().strip())
+print(f"Duration = {duration} ms")
 # data = move_front_half_to_end(data.T)
 
 print(data.shape)

@@ -39,6 +39,8 @@ void setup() {
 
 void loop() {
   delay(2000);
+  unsigned long timeBegin = millis();
+
   kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, 0, 0);
 
   // Collect data and perform FFT for each window
@@ -73,9 +75,12 @@ void loop() {
     }
 
     Serial.println();
-
-    free(cfg);
   }
+
+  unsigned long timeEnd = millis(); 
+  unsigned long duration = timeEnd - timeBegin;
+
+  Serial.println(duration);
 
   while (true)
     ;

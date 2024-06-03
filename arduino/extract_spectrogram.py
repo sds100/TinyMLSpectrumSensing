@@ -7,7 +7,7 @@ from scipy.fft import fft
 
 from training.spectrogram import move_front_half_to_end
 
-file = "../../training/data/numpy/SNR30_ZB.npy"
+file = "../../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex128] = np.load(file)
 
 NUM_WINDOWS = 100
