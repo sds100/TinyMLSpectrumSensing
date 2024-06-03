@@ -8,22 +8,23 @@ from scipy.fft import fft
 file = "../../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex128] = np.load(file)
 
-NUM_WINDOWS = 128
+NUM_WINDOWS = 1024
 SAMPLES = 256
 NFFT = 64
 data = data[:SAMPLES * NUM_WINDOWS]
 
 fs = 88000000
 
-data = data * 1000
+data_scale_factor: float = 50000.0
+data = data * data_scale_factor
 
 real_list: List[str] = []
 imag_list: List[str] = []
 
 
 def format_num(n) -> str:
-    return np.format_float_positional(np.float16(n))
-    # return np.int16(np.float16(n) * 10000)
+    # return np.format_float_positional(np.float16(n))
+    return str(np.int8(n))
 
 
 for n in data:
@@ -41,10 +42,10 @@ for w in range(NUM_WINDOWS):
     for i in range(SAMPLES):
         number_index = (w * SAMPLES) + i
 
-        real = real_list[number_index]
-        imag = imag_list[number_index]
+        real = np.int8(real_list[number_index])
+        imag = np.int8(imag_list[number_index])
 
-        fft_input.append(complex(np.float16(real), np.float16(imag)))
+        fft_input.append(complex(real, imag))
 
     fft_input = np.asarray(fft_input)
 
@@ -109,5 +110,5 @@ def write_variable(x: List, f: TextIO, name: str, type: str):
 with open("data.h", "w") as f:
     f.write("#include <avr/pgmspace.h>\n")
 
-    write_variable(real_list, f, "real", "float")
-    write_variable(imag_list, f, "imag", "float")
+    write_variable(real_list, f, "real", "int8_t")
+    write_variable(imag_list, f, "imag", "int8_t")

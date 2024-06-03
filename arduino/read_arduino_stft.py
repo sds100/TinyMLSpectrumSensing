@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import serial
-
-from training.spectrogram import move_front_half_to_end
 
 # Configure the serial port to which the Arduino is connected
 ser = serial.Serial('/dev/cu.usbmodem2101', 115200, timeout=3000)

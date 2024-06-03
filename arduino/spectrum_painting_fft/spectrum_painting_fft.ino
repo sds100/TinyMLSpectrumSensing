@@ -5,7 +5,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 64;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 128;
+const int NUM_WINDOWS = 512;
 const int TARGET_RESOLUTION = 64;
 
 unsigned int sampling_period_us;
@@ -52,8 +52,10 @@ void loop() {
       int memIndex = (w * SAMPLES) + i;
 
       // Serial.print("Read index " + memIndex);
-      in[i].r = pgm_read_float(real + memIndex);
-      in[i].i = pgm_read_float(imag + memIndex);
+      
+      // Don't need to rescale the data. Doing FFT on integers works fine.
+      in[i].r = ((int8_t) pgm_read_byte(real + memIndex));
+      in[i].i = ((int8_t) pgm_read_byte(imag + memIndex));
     }
     
     kiss_fft(cfg, in, out);
