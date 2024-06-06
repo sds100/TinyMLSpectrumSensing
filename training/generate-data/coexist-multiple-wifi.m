@@ -153,10 +153,6 @@ function coexist(snr, file)
                     old_data = load(filename);
                     WaveformOut = [old_data.WaveformOut;WaveformOut];
                 end
-
-                % Save as single precision complex numbers
-                % to save on space.
-                WaveformOut = single(WaveformOut);
                 save(filename, 'WaveformOut');
             end
         end

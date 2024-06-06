@@ -1,10 +1,14 @@
-SNR = [30, 20, 10, 0];
+SNR = [30];
 
-file='../data/matlab-random';
+file='../data/matlab-better-bt-hopping';
 
 % create data files in parallel
-parfor i=1:length(SNR)
-    % create 44,000,000 lines by running the script twice
-    coexist_random_tx_power(SNR(i), file);
-    coexist_random_tx_power(SNR(i), file);
+for i=1:length(SNR)
+    % append 44,000,000 lines by running the script twice
+    coexist(SNR(i), file);
+    coexist(SNR(i), file);
+    coexist(SNR(i), file);
+    coexist(SNR(i), file);
+    coexist(SNR(i), file);
+    coexist(SNR(i), file);
 end

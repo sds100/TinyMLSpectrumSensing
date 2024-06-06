@@ -64,7 +64,9 @@ def load_spectrograms(data_dir: str,
         for snr in snr_list:
             data = np.load(f"{data_dir}/SNR{snr}_{c}.npy")
 
-            spectrogram = create_spectrogram(data[:count], sample_rate, snr, window_length)
+            spectrogram = create_spectrogram(data, sample_rate, snr, window_length)
             spectrograms[c].append(spectrogram)
+
+            del data
 
     return spectrograms

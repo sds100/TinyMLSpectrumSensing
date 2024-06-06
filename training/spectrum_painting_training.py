@@ -70,16 +70,23 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
             # sizes is that for painting to remove the WiFi signals, they must fill the
             # entire width of the spectrogram.
 
-            # middle: int = len(spec.values) // 2
-            # start_freq: int = middle - 32
-            # end_freq: int = middle + 32
-            # 
-            # spec = sp.take_frequencies(spec, start_freq, end_freq)
+            middle: int = len(spec.values) // 2
+            start_freq: int = middle - 32
+            end_freq: int = middle + 32
+
+            spec = sp.take_frequencies(spec, start_freq, end_freq)
 
             slices = split_spectrogram(spec, duration=options.spectrogram_length)
-    
+
             for s in slices:
                 (augmented, painted) = create_augmented_painted_images(s, options)
+
+                # mean_painted = np.mean(painted)
+                # max_painted = np.max(painted)
+                # 
+                # if abs(mean_painted - max_painted) < 10:
+                #     continue
+
                 digitized_augmented_slices.append(augmented)
                 digitized_painted_slices.append(painted)
                 labels.append(class_index)
