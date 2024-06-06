@@ -5,8 +5,8 @@ import numpy.typing as npt
 from matplotlib import pyplot as plt
 from scipy.fft import fft
 
-file = "../../training/data/numpy/SNR30_ZBW.npy"
-data: npt.NDArray[np.complex128] = np.load(file)
+file = "../training/data/numpy/SNR30_ZBW.npy"
+data: npt.NDArray[np.complex64] = np.load(file)
 
 NUM_WINDOWS = 1024
 SAMPLES = 256
@@ -109,7 +109,7 @@ def write_variable(x: List, f: TextIO, name: str, type: str):
     f.write("\n};\n\n")
 
 
-with open("data.h", "w") as f:
+with open("spectrum_painting/data.h", "w") as f:
     f.write("#include <avr/pgmspace.h>\n")
 
     write_variable(real_list, f, "real", "int8_t")

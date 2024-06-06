@@ -1,4 +1,3 @@
-#include <arduinoFFT.h>
 #include "data.h"
 #include "kiss_fft.h"
 
@@ -26,16 +25,6 @@ void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
-
-  // sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
-
-  // Simulate I/Q data (replace with actual I/Q data collection)
-  // for (int w = 0; w < NUM_WINDOWS; w++) {
-  //   for (int i = 0; i < SAMPLES; i++) {
-  //     iqData[w][i][0] = sin(2 * PI * i / SAMPLES) * cos(2 * PI * w / NUM_WINDOWS); // I component
-  //     iqData[w][i][1] = sin(2 * PI * i / SAMPLES) * sin(2 * PI * w / NUM_WINDOWS); // Q component
-  //   }
-  // }
 }
 
 void loop() {

@@ -11,15 +11,15 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 def create_channel(input: layers.Input) -> layers.Layer:
     # Padding "same" adds zero-padding.
-    layer = layers.Conv2D(filters=16, kernel_size=(7, 7), activation='relu', padding='same')(input)
+    layer = layers.Conv2D(filters=8, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=16, kernel_size=(5, 5), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=8, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=8, kernel_size=(3, 3), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
@@ -147,8 +147,8 @@ def convert_to_tensorflow_lite(model: models.Model,
         for img in repr_painted_images:
             img.shape += (1,)
 
-        augmented_images = tf.data.Dataset.from_tensor_slices(repr_augmented_images).batch(1).take(100)
-        painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1).take(100)
+        augmented_images = tf.data.Dataset.from_tensor_slices(repr_augmented_images).batch(1)
+        painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1)
         for aug_value, painted_value in list(zip(augmented_images, painted_images)):
             # Model has only one input so each data point has one element.
             yield [aug_value, painted_value]

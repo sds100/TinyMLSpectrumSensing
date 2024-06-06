@@ -28,7 +28,8 @@ Make sure you have compatible versions for Python, TensorFlow, C Compiler, cuDNN
 
 1. Install the Arduino IDE.
 2. Follow their instructions on getting started with TensorFLow Lite Micro library. https://docs.arduino.cc/tutorials/nano-33-ble-sense/get-started-with-machine-learning/
-3. Open the `spectrum-painting.ino` file in the Arduino IDE.
+3. There is a conflict with the kissfft library that I've copied into the project because the TF Lite Micro library has its own copy. Inside the Arduino libraries folder in your system delete `Arduino_TensorFlowLite/src/tensorflow/lite/experimental` and `Arduino_TensorFlowLite/src/third_party/kissfft`.
+4. Open the `spectrum-painting.ino` file in the Arduino IDE.
 
 ## Useful links
 

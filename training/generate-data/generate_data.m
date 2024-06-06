@@ -1,6 +1,6 @@
-SNR = [30];
+SNR = [5];
 
-file='../data/matlab-better-bt-hopping';
+file='../data/matlab';
 
 % create data files in parallel
 for i=1:length(SNR)
@@ -11,4 +11,4 @@ for i=1:length(SNR)
     coexist(SNR(i), file);
     coexist(SNR(i), file);
     coexist(SNR(i), file);
-end
+end 
