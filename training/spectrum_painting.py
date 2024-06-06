@@ -6,7 +6,7 @@ from spectrogram import Spectrogram
 
 
 def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
-    return Spectrogram(values=spec.values[start:end], snr=spec.snr)
+    return Spectrogram(values=spec.values[start:end], label=spec.label)
 
 
 def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDArray:

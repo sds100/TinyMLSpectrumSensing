@@ -34,10 +34,10 @@ class SpectrumPaintingTrainTestSets:
     label_names: List[str]
 
 
-def create_augmented_painted_images(spectrogram: Spectrogram,
+def create_augmented_painted_images(spectrogram: npt.NDArray,
                                     options: SpectrumPaintingTrainingOptions) -> (
         npt.NDArray[np.uint8], npt.NDArray[np.uint8]):
-    downsampled = sp.downsample_spectrogram(spectrogram.values, options.downsample_resolution)
+    downsampled = sp.downsample_spectrogram(spectrogram, options.downsample_resolution)
     augmented = sp.augment_spectrogram(downsampled, options.k, options.l, options.d)
     digitized_augmented = sp.digitize_spectrogram(augmented, options.color_depth)
 
@@ -47,7 +47,7 @@ def create_augmented_painted_images(spectrogram: Spectrogram,
     return digitized_augmented, digitized_painted
 
 
-def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectrogram]],
+def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectrogram]],
                                              options: SpectrumPaintingTrainingOptions,
                                              test_size: float = 0.3) -> SpectrumPaintingTrainTestSets:
     """
@@ -63,7 +63,11 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
     label_names: List[str] = []
     snr_list: List[int] = []
 
-    for (class_index, (label, spectrogram_list)) in enumerate(spectrograms.items()):
+    removed_image_count: int = 0
+
+    for (snr_index, (snr, spectrogram_list)) in enumerate(spectrograms.items()):
+        sliced_spectrograms: Dict[str, List[npt.NDArray]] = {}
+
         for spec in spectrogram_list:
             # Taking the middle of the spectrogram is not needed if you use
             # high D (step size) values. The reason why you may need it for small step
@@ -76,23 +80,35 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[str, List[Spectr
 
             spec = sp.take_frequencies(spec, start_freq, end_freq)
 
-            slices = split_spectrogram(spec, duration=options.spectrogram_length)
+            slices = split_spectrogram(spec.values, duration=options.spectrogram_length)
+            sliced_spectrograms[spec.label] = slices
 
-            for s in slices:
+        include_indices: List[int] = []
+
+        for (i, s) in enumerate(sliced_spectrograms["B"]):
+            (augmented, painted) = create_augmented_painted_images(s, options)
+
+            mean_painted = np.mean(painted)
+            max_painted = np.max(painted)
+
+            if mean_painted < 1:
+                removed_image_count += 1
+            else:
+                include_indices.append(i)
+
+        for label_index, (label, slices) in enumerate(sliced_spectrograms.items()):
+            for i in include_indices:
+                s = slices[i]
                 (augmented, painted) = create_augmented_painted_images(s, options)
-
-                # mean_painted = np.mean(painted)
-                # max_painted = np.max(painted)
-                # 
-                # if abs(mean_painted - max_painted) < 10:
-                #     continue
 
                 digitized_augmented_slices.append(augmented)
                 digitized_painted_slices.append(painted)
-                labels.append(class_index)
-                snr_list.append(s.snr)
+                labels.append(label_index)
+                snr_list.append(snr)
 
-        label_names.append(label)
+            label_names.append(label)
+            
+    print(f"Removed {removed_image_count} images that didn't actually contain any Bluetooth signals.")
 
     x_combined = np.stack((digitized_augmented_slices, digitized_painted_slices), axis=3)
 

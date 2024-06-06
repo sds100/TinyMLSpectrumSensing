@@ -15,7 +15,7 @@ class Spectrogram:
     snr: The signal-to-noise ratio of the spectrogram.
     """
     values: npt.NDArray[np.float32]
-    snr: int
+    label: str
 
 
 def move_front_half_to_end(array: npt.NDArray) -> npt.NDArray:
@@ -26,12 +26,11 @@ def move_front_half_to_end(array: npt.NDArray) -> npt.NDArray:
     return np.concatenate((array[n // 2:], array[:n // 2]))
 
 
-def create_spectrogram(x: Iterable, fs: int, snr: int, window_length: int) -> Spectrogram:
+def create_spectrogram(x: Iterable, fs: int, label: str, window_length: int) -> Spectrogram:
     """
     Create a spectrogram of a signal.
     :param x: The signal
     :param fs: The sample rate in Hz.
-    :param snr: The SNR of the signal. This is saved as metadata in the spectrogram.
     :return: A Spectrogram instance that contains the frequencies, time and values.
     """
 
@@ -46,27 +45,25 @@ def create_spectrogram(x: Iterable, fs: int, snr: int, window_length: int) -> Sp
     # the *last* half of the data so this method moves to the front
     # This can help with plotting because to use 'nearest' shading requires the
     # data to be monotonically increasing/decreasing in value.
-    return Spectrogram(values=move_front_half_to_end(Zxx_abs), snr=snr)
+    return Spectrogram(values=move_front_half_to_end(Zxx_abs), label=label)
 
 
-def split_spectrogram(spectrogram: Spectrogram, duration: int) -> List[Spectrogram]:
+def split_spectrogram(spectrogram: npt.NDArray, duration: int) -> List[npt.NDArray]:
     """
     Split up a spectrogram along the time axis into a bunch of smaller spectrograms.
     :param spectrogram: The spectrogram to split
     :param duration: The length of each sub-spectrogram
     :return: A list of sub spectrograms.
     """
-    sub_spectrograms: List[Spectrogram] = []
+    sub_spectrograms: List[npt.NDArray] = []
 
     start_index: int = 0
     end_index: int = duration
 
-    while end_index < spectrogram.values.shape[1]:
-        values_slice = [time_values[start_index:end_index] for time_values in spectrogram.values]
+    while end_index < spectrogram.shape[1]:
+        values_slice = spectrogram[:, start_index:end_index]
 
-        sub_spectrograms.append(
-            Spectrogram(values=np.array(values_slice),
-                        snr=spectrogram.snr))
+        sub_spectrograms.append(np.asarray(values_slice))
 
         start_index += duration
         end_index += duration
