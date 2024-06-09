@@ -1,10 +1,11 @@
-// #include "TensorFlowLite.h"
-// #include "tensorflow/lite/micro/all_ops_resolver.h"
-// #include "tensorflow/lite/micro/micro_interpreter.h"
-// #include "tensorflow/lite/micro/micro_log.h"
-// #include "tensorflow/lite/schema/schema_generated.h"
+#include "TensorFlowLite.h"
 
 #include "model.h"
+#include "tensorflow/lite/micro/all_ops_resolver.h"
+#include "tensorflow/lite/micro/micro_interpreter.h"
+// #include "tensorflow/lite/micro/micro_log.h"
+#include "tensorflow/lite/schema/schema_generated.h"
+
 #include "data.h"
 #include "kiss_fft.h"
 
@@ -24,14 +25,14 @@ kiss_fft_cpx out[NFFT];
 
 float downsampled[NFFT * TARGET_RESOLUTION];
 
-// const tflite::Model* model = nullptr;
-// tflite::MicroInterpreter* interpreter = nullptr;
-// TfLiteTensor* inputAugmented = nullptr;
-// TfLiteTensor* inputPainted = nullptr;
-// TfLiteTensor* output = nullptr;
+const tflite::Model* model = nullptr;
+tflite::MicroInterpreter* interpreter = nullptr;
+TfLiteTensor* inputAugmented = nullptr;
+TfLiteTensor* inputPainted = nullptr;
+TfLiteTensor* output = nullptr;
 
-// constexpr int tensor_arena_size = 50 * 1024;
-// byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+constexpr int tensor_arena_size = 50 * 1024;
+byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 const int no_classes = 7;
 const char* labels[no_classes] = {
@@ -39,13 +40,13 @@ const char* labels[no_classes] = {
 };
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setTimeout(4000);
   // wait for serial initialization so printing in setup works.
   while (!Serial)
     ;
 
-  // model = tflite::GetModel(output_spectrum_painting_model_tflite);
+  model = tflite::GetModel(output_spectrum_painting_model_tflite);
 
   // if (model->version() != TFLITE_SCHEMA_VERSION) {
   //   MicroPrintf(
@@ -55,20 +56,22 @@ void setup() {
   //   return;
   // }
 
-  // tflite::AllOpsResolver resolver;
+  tflite::AllOpsResolver resolver;
 
-  // interpreter = new tflite::MicroInterpreter(model, resolver, tensor_arena, tensor_arena_size);
+  interpreter = new tflite::MicroInterpreter(model, resolver, tensor_arena, tensor_arena_size);
 
-  // TfLiteStatus allocate_status = interpreter->AllocateTensors();
+  TfLiteStatus allocate_status = interpreter->AllocateTensors();
 
-  // if (allocate_status != kTfLiteOk) {
-  //   Serial.println("ALLOCATE TENSORS FAILED");
-  //   MicroPrintf("AllocateTensors() failed");
-  // }
+  Serial.println(F("Allocated"));
 
-  // inputAugmented = interpreter->input(0);
-  // inputPainted = interpreter->input(1);
-  // output = interpreter->output(0);
+  if (allocate_status != kTfLiteOk) {
+    Serial.println("ALLOCATE TENSORS FAILED");
+    MicroPrintf("AllocateTensors() failed");
+  }
+
+  inputAugmented = interpreter->input(0);
+  inputPainted = interpreter->input(1);
+  output = interpreter->output(0);
 }
 
 void loop() {
@@ -81,6 +84,7 @@ void loop() {
   float* augmented = augment(downsampled);
   uint8_t* digitizedAugmented = digitize(augmented);
   unsigned long timeAugment = millis();
+  Serial.println(F("Augmented"));
 
   float* painted = paint(downsampled, augmented);
   uint8_t* digitizedPainted = digitize(painted);
@@ -88,7 +92,22 @@ void loop() {
 
   unsigned long timeTotal = millis();
 
-  printSpectrogram(digitizedPainted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
+  // printSpectrogram(digitizedPainted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
+
+  int timeBins = TARGET_RESOLUTION;
+  int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
+
+  for (int t = 0; t < timeBins; t++) {
+    for (int f = 0; f < freqBins; f++) {
+      Serial.print(digitizedPainted[(t * freqBins) + f]);
+
+      if (f < freqBins - 1) {
+        Serial.print(F(","));
+      }
+    }
+
+    Serial.println();
+  }
   Serial.println(timeDownsample - timeBegin);
   Serial.println(timeAugment - timeDownsample);
   Serial.println(timePaint - timeAugment);
@@ -347,10 +366,10 @@ void insertionSort(float data[], uint16_t n) {
 void printSpectrogram(uint8_t* spectrogram, int timeBins, int freqBins) {
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
-      Serial.print(spectrogram[(t * freqBins) + f]);
+      Serial.print(F(spectrogram[(t * freqBins) + f]));
 
       if (f < freqBins - 1) {
-        Serial.print(",");
+        Serial.print(F(","));
       }
     }
 
