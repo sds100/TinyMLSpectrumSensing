@@ -10,7 +10,8 @@ data: npt.NDArray[np.complex64] = np.load(file)
 
 NUM_WINDOWS = 256
 SAMPLES = 256
-NFFT = 64
+NFFT = 256
+TARGET_RESOLUTION = 64
 data = data[:SAMPLES * NUM_WINDOWS]
 
 fs = 88000000
@@ -33,7 +34,7 @@ for n in data:
     real_list.append(format_num(n.real))
     imag_list.append(format_num(n.imag))
 
-spectrogram_data = []
+spectrogram_data: npt.NDArray[float] = np.zeros(shape=(NUM_WINDOWS, NFFT))
 
 for w in range(NUM_WINDOWS):
     start = w * SAMPLES
@@ -59,25 +60,35 @@ for w in range(NUM_WINDOWS):
 
     result = np.concatenate((result[middle:], result[:middle]))
 
-    spectrogram_data.append(list(result))
+    for i in range(len(result)):
+        spectrogram_data[w][i] = result[i]
 
-target_resolution = 64
-scale_factor = NUM_WINDOWS // target_resolution
+spectrogram_slice: npt.NDArray[float] = np.zeros(shape=(NUM_WINDOWS, TARGET_RESOLUTION))
 
-downsampled: npt.NDArray[float] = np.empty(shape=target_resolution * target_resolution)
+middle: int = NFFT // 2
+start: int = middle - (TARGET_RESOLUTION // 2)
+end: int = middle + (TARGET_RESOLUTION // 2)
 
-for i in range(target_resolution):
+for w in range(NUM_WINDOWS):
+    for i in range(TARGET_RESOLUTION - 1):
+        spectrogram_slice[w][i] = spectrogram_data[w][start + i]
+
+scale_factor = NUM_WINDOWS // TARGET_RESOLUTION
+
+downsampled: npt.NDArray[float] = np.zeros(shape=TARGET_RESOLUTION * TARGET_RESOLUTION)
+
+for i in range(TARGET_RESOLUTION):
     start = i * scale_factor
 
-    for j in range(NFFT):
+    for j in range(TARGET_RESOLUTION):
         col_sum = 0
 
         for k in range(scale_factor):
-            col_sum = col_sum + spectrogram_data[start + k][j]
+            col_sum = col_sum + spectrogram_slice[start + k][j]
 
         column_scaled = col_sum / scale_factor
 
-        downsampled[i * target_resolution + j] = column_scaled
+        downsampled[i * TARGET_RESOLUTION + j] = column_scaled
 
 # f, t, Zxx = signal.stft(x=data, fs=fs, return_onesided=False, window="hamming", nperseg=64, noverlap=0)
 # Zxx = move_front_half_to_end(Zxx)
@@ -91,11 +102,11 @@ plt.imshow(np.asarray(downsampled).reshape((64, 64)), aspect='auto', origin='low
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
-plt.title('Spectrogram Python')
+plt.title('Downsampled spectrogram Python')
 plt.show()
 
-freq_bins = NFFT
-time_bins = target_resolution
+freq_bins = TARGET_RESOLUTION
+time_bins = TARGET_RESOLUTION
 K = 3
 L = 16
 D = 4
@@ -129,7 +140,7 @@ for t in range(time_bins):
         f_augmented += 1
         f += D
 
-plt.imshow(np.asarray(augmented).reshape((NFFT, augmented_freq_bins)))
+plt.imshow(np.asarray(augmented).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
