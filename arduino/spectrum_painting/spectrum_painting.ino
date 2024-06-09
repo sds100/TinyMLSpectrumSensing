@@ -19,12 +19,6 @@ const int K = 3;
 const int L = 16;
 const int D = 4;
 
-kiss_fft_cfg cfg;
-kiss_fft_cpx in[SAMPLES];
-kiss_fft_cpx out[NFFT];
-
-float downsampled[NFFT * TARGET_RESOLUTION];
-
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* inputAugmented = nullptr;
@@ -76,10 +70,8 @@ void setup() {
 
 void loop() {
   unsigned long timeBegin = millis();
-  createDownsampledSpectrogram(real, imag);
+  float* downsampled = createDownsampledSpectrogram(real, imag);
   unsigned long timeDownsample = millis();
-
-  // TODO: TAKE MIDDLE FREQUENCIES ONLY
 
   float* augmented = augment(downsampled);
   uint8_t* digitizedAugmented = digitize(augmented);
@@ -89,6 +81,48 @@ void loop() {
   float* painted = paint(downsampled, augmented);
   uint8_t* digitizedPainted = digitize(painted);
   unsigned long timePaint = millis();
+
+  // free(downsampled);
+  // downsampled = nullptr;
+  // free(augmented);
+  // augmented = nullptr;
+  // free(painted);
+  // painted = nullptr;
+
+  // size_t inputLength = inputAugmented->bytes;
+  // Serial.println(inputLength);
+
+  // int label = runInference(digitizedAugmented, digitizedPainted);
+  size_t inputLength = inputAugmented->bytes;
+  Serial.println(inputLength);
+  Serial.println(inputAugmented->type);
+
+  for (unsigned int i = 0; i < inputLength; i++) {
+    inputAugmented->data.uint8[i] = (byte) digitizedAugmented[i];
+  }
+
+  for (unsigned int i = 0; i < inputLength; i++) {
+    inputPainted->data.uint8[i] = (byte) digitizedPainted[i];
+  }
+
+  TfLiteStatus invoke_status = interpreter->Invoke();
+
+  // if (invoke_status != kTfLiteOk) {
+  //   Serial.println("Invoke failed " + String(invoke_status));
+  //   // return -1;
+  // }
+
+  // int index_loc_highest_prob = -1;
+  // float highest_prob = -1.0;
+
+  // for (int i = 0; i < no_classes; i++) {
+  //   if (output->data.uint8[i] > highest_prob) {
+  //     highest_prob = output->data.uint8[i];
+  //     index_loc_highest_prob = i;
+  //   }
+  // }
+
+  unsigned long timeInference = millis();
 
   unsigned long timeTotal = millis();
 
@@ -108,16 +142,19 @@ void loop() {
 
     Serial.println();
   }
+
   Serial.println(timeDownsample - timeBegin);
   Serial.println(timeAugment - timeDownsample);
   Serial.println(timePaint - timeAugment);
+  Serial.println(timeInference - timePaint);
   Serial.println(timeTotal - timeBegin);
+  // Serial.println(index_loc_highest_prob);
 
   while (true)
     ;
 }
 
-// int runInference(int8_t* augmented, int8_t* painted) {
+// int runInference(uint8_t* augmented, uint8_t* painted) {
 //   size_t inputLength = inputAugmented->bytes;
 
 //   for (unsigned int i = 0; i < inputLength; i++) {
@@ -148,10 +185,16 @@ void loop() {
 //   return index_loc_highest_prob;
 // }
 
-void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
+float* createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
+  // DOES LOADING DATA INTO MEMORY SPEED IT UP?
+  kiss_fft_cpx fftIn[SAMPLES];
+  kiss_fft_cpx fftOut[NFFT];
+
   kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
 
   float cumulative_row[NFFT];
+  float* downsampled = (float*)calloc(NFFT * TARGET_RESOLUTION, sizeof(float));
+
   int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
 
   int downsampledRowCounter = 0;
@@ -170,11 +213,11 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
       int memIndex = (w * SAMPLES) + i;
 
       // Don't need to rescale the data. Doing FFT on integers works fine.
-      in[i].r = ((int8_t)pgm_read_byte(real + memIndex));
-      in[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
+      fftIn[i].r = ((int8_t)pgm_read_byte(real + memIndex));
+      fftIn[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
     }
 
-    kiss_fft(cfg, in, out);
+    kiss_fft(cfg, fftIn, fftOut);
 
     int middle = NFFT / 2;
 
@@ -182,13 +225,13 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
     // outputs the data in the wrong order. The first half of the spectrogram
     // comes out on the second half, and vice versa.
     for (int i = middle; i < NFFT; i++) {
-      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+      float magnitude = sqrt(fftOut[i].r * fftOut[i].r + fftOut[i].i * fftOut[i].i);
 
       cumulative_row[(i - middle)] += magnitude;
     }
 
     for (int i = 0; i < middle; i++) {
-      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+      float magnitude = sqrt(fftOut[i].r * fftOut[i].r + fftOut[i].i * fftOut[i].i);
 
       cumulative_row[(i + middle)] += magnitude;
     }
@@ -204,6 +247,9 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
       downsampledRowCounter += 1;
     }
   }
+
+  kiss_fft_free(cfg);
+  return downsampled;
 }
 
 int calculateNumAugmentedFreqBins(int freqBins) {
@@ -222,7 +268,7 @@ float* augment(float* in) {
 
   float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
 
-  memcpy(downsampledCopy, downsampled, sizeof(downsampled));
+  memcpy(downsampledCopy, in, sizeof(in));
 
   float* out = (float*)calloc(outLength, sizeof(float));
 

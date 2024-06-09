@@ -49,6 +49,7 @@ def predict_lite_model(model: List[bytes],
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()[0]
+    print(input_details)
     output_details = interpreter.get_output_details()[0]
 
     interpreter.set_tensor(0, x_augmented)

@@ -147,8 +147,8 @@ def convert_to_tensorflow_lite(model: models.Model,
         for img in repr_painted_images:
             img.shape += (1,)
 
-        augmented_images = tf.data.Dataset.from_tensor_slices(repr_augmented_images).batch(1)
-        painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1)
+        augmented_images = tf.data.Dataset.from_tensor_slices(repr_augmented_images).batch(1).take(100)
+        painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1).take(100)
         for aug_value, painted_value in list(zip(augmented_images, painted_images)):
             # Model has only one input so each data point has one element.
             yield [aug_value, painted_value]
