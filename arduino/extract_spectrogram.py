@@ -8,7 +8,7 @@ from scipy.fft import fft
 file = "../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
 
-NUM_WINDOWS = 1024
+NUM_WINDOWS = 128
 SAMPLES = 256
 NFFT = 256
 TARGET_RESOLUTION = 64
@@ -135,13 +135,43 @@ for t in range(time_bins):
         mean_top_k /= K
 
         downsampled[(t * freq_bins) + f] = mean_top_k
-        value = downsampled[(t * freq_bins) + f] - input_mean
+        value: float = downsampled[(t * freq_bins) + f] - input_mean
         augmented[(t * augmented_freq_bins) + f_augmented] = max(0, value)
 
         f_augmented += 1
         f += D
 
-plt.imshow(np.asarray(augmented).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
+
+def digitize(spectrogram: npt.NDArray[float]) -> npt.NDArray[np.uint8]:
+    digitized_spectrogram: npt.NDArray[np.uint8] = np.zeros(shape=time_bins * augmented_freq_bins)
+    max_value: float = 0
+
+    for t in range(time_bins):
+        for f in range(augmented_freq_bins):
+            value = spectrogram[(t * augmented_freq_bins) + f]
+            max_value = max(max_value, value)
+
+    scale_factor = 255 / max_value
+
+    if max_value == 0:
+        return digitized_spectrogram
+
+    for t in range(time_bins):
+        for f in range(augmented_freq_bins):
+            index = (t * augmented_freq_bins) + f
+            value = spectrogram[index] * scale_factor
+
+            if value < 0:
+                value = 0
+
+            digitized_spectrogram[index] = value
+
+    return digitized_spectrogram
+
+
+augmented_digitized = digitize(augmented)
+
+plt.imshow(np.asarray(augmented_digitized).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
@@ -162,7 +192,9 @@ for t in range(time_bins):
         augmented_value: float = augmented[(t * augmented_freq_bins) + f]
         painted[(t * augmented_freq_bins) + f] = max(0, augmented_value - mean_time_original)
 
-plt.imshow(np.asarray(painted).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
+painted_digitized = digitize(painted)
+
+plt.imshow(np.asarray(painted_digitized).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')

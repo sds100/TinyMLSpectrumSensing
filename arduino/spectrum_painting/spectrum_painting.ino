@@ -11,7 +11,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 1024;
+const int NUM_WINDOWS = 128;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -79,18 +79,20 @@ void loop() {
   // TODO: TAKE MIDDLE FREQUENCIES ONLY
 
   float* augmented = augment(downsampled);
+  uint8_t* digitizedAugmented = digitize(augmented);
   unsigned long timeAugment = millis();
 
   float* painted = paint(downsampled, augmented);
+  uint8_t* digitizedPainted = digitize(painted);
   unsigned long timePaint = millis();
 
   unsigned long timeTotal = millis();
 
-  printSpectrogram(painted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
+  printSpectrogram(digitizedPainted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
   Serial.println(timeDownsample - timeBegin);
   Serial.println(timeAugment - timeDownsample);
   Serial.println(timePaint - timeAugment);
-  Serial.println(timeTotal  - timeBegin);
+  Serial.println(timeTotal - timeBegin);
 
   while (true)
     ;
@@ -126,6 +128,64 @@ void loop() {
 
 //   return index_loc_highest_prob;
 // }
+
+void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
+  kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
+
+  float cumulative_row[NFFT];
+  int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
+
+  int downsampledRowCounter = 0;
+
+  int middleFreq = NFFT / 2;
+  int startFreq = middleFreq - 32;
+
+  for (int w = 0; w < NUM_WINDOWS; w++) {
+    if (w % scaleFactor == 0) {
+      for (int i = 0; i < NFFT; i++) {
+        cumulative_row[i] = 0;
+      }
+    }
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int memIndex = (w * SAMPLES) + i;
+
+      // Don't need to rescale the data. Doing FFT on integers works fine.
+      in[i].r = ((int8_t)pgm_read_byte(real + memIndex));
+      in[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
+    }
+
+    kiss_fft(cfg, in, out);
+
+    int middle = NFFT / 2;
+
+    // I'm not sure why but for my training data, computing the FFT puts
+    // outputs the data in the wrong order. The first half of the spectrogram
+    // comes out on the second half, and vice versa.
+    for (int i = middle; i < NFFT; i++) {
+      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+
+      cumulative_row[(i - middle)] += magnitude;
+    }
+
+    for (int i = 0; i < middle; i++) {
+      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
+
+      cumulative_row[(i + middle)] += magnitude;
+    }
+
+    if (w != 0 && (w + 1) % scaleFactor == 0) {
+      for (int i = 0; i < NFFT; i++) {
+        cumulative_row[i] = cumulative_row[i] / scaleFactor;
+      }
+
+      // Only take the frequencies that are filled by the Wi-Fi signal.
+
+      memcpy(downsampled + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
+      downsampledRowCounter += 1;
+    }
+  }
+}
 
 int calculateNumAugmentedFreqBins(int freqBins) {
   return ((freqBins - L) / D) + 1;
@@ -225,6 +285,43 @@ float* paint(float* downsampled, float* augmented) {
   return out;
 }
 
+uint8_t* digitize(float* in) {
+  // The number of rows in the spectrogram - i.e number of time bins.
+  int timeBins = TARGET_RESOLUTION;
+  int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
+
+  int outLength = freqBins * timeBins;
+  uint8_t* out = (uint8_t*)calloc(outLength, sizeof(uint8_t));
+  float maxValue = 0;
+
+  for (int t = 0; t < timeBins; t++) {
+    for (int f = 0; f < freqBins; f++) {
+      float value = in[(t * freqBins) + f];
+      maxValue = max(maxValue, value);
+    }
+  }
+
+  // if the max value is 0 then there is no data to scale so
+  // just return a spectrogram with all zeros.
+  if (maxValue == 0) {
+    return out;
+  }
+
+  // We want to store the values in one byte so 255 is the max value.
+  float scaleFactor = 255 / maxValue;
+
+  for (int t = 0; t < timeBins; t++) {
+    for (int f = 0; f < freqBins; f++) {
+      int index = (t * freqBins) + f;
+      uint8_t value = (uint8_t)(in[index] * scaleFactor);
+
+      out[index] = value;
+    }
+  }
+
+  return out;
+}
+
 /**
   From https://github.com/bxparks/AceSorting
 **/
@@ -247,65 +344,7 @@ void insertionSort(float data[], uint16_t n) {
   }
 }
 
-void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
-  kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
-
-  float cumulative_row[NFFT];
-  int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
-
-  int downsampledRowCounter = 0;
-
-  int middleFreq = NFFT / 2;
-  int startFreq = middleFreq - 32;
-
-  for (int w = 0; w < NUM_WINDOWS; w++) {
-    if (w % scaleFactor == 0) {
-      for (int i = 0; i < NFFT; i++) {
-        cumulative_row[i] = 0;
-      }
-    }
-
-    for (int i = 0; i < SAMPLES; i++) {
-      int memIndex = (w * SAMPLES) + i;
-
-      // Don't need to rescale the data. Doing FFT on integers works fine.
-      in[i].r = ((int8_t)pgm_read_byte(real + memIndex));
-      in[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
-    }
-
-    kiss_fft(cfg, in, out);
-
-    int middle = NFFT / 2;
-
-    // I'm not sure why but for my training data, computing the FFT puts
-    // outputs the data in the wrong order. The first half of the spectrogram
-    // comes out on the second half, and vice versa.
-    for (int i = middle; i < NFFT; i++) {
-      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
-
-      cumulative_row[(i - middle)] += magnitude;
-    }
-
-    for (int i = 0; i < middle; i++) {
-      float magnitude = sqrt(out[i].r * out[i].r + out[i].i * out[i].i);
-
-      cumulative_row[(i + middle)] += magnitude;
-    }
-
-    if (w != 0 && (w + 1) % scaleFactor == 0) {
-      for (int i = 0; i < NFFT; i++) {
-        cumulative_row[i] = cumulative_row[i] / scaleFactor;
-      }
-
-      // Only take the frequencies that are filled by the Wi-Fi signal.
-
-      memcpy(downsampled + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
-      downsampledRowCounter += 1;
-    }
-  }
-}
-
-void printSpectrogram(float* spectrogram, int timeBins, int freqBins) {
+void printSpectrogram(uint8_t* spectrogram, int timeBins, int freqBins) {
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
       Serial.print(spectrogram[(t * freqBins) + f]);
