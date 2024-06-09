@@ -43,27 +43,27 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
     # copy the spectrogram so modifying the values in-place
     # does not change the argument.
     spectrogram_copy = np.copy(spectrogram).T
-    (M, N) = spectrogram_copy.shape
+    (time_bins, freq_bins) = spectrogram_copy.shape
 
-    augmented_width = ((N - l) // d) + 1
-    augmented_spectrogram: np.ndarray = np.zeros(shape=(M, augmented_width), dtype=np.float32)
+    augmented_width = ((freq_bins - l) // d) + 1
+    augmented_spectrogram: np.ndarray = np.zeros(shape=(time_bins, augmented_width), dtype=np.float32)
 
     m = np.mean(spectrogram_copy)
 
-    for i in range(1, M):
-        j_augmented = 0
-        j = 0
-        while j <= N - l:
+    for t in range(1, time_bins):
+        f_augmented = 0
+        f = 0
+        while f <= freq_bins - l:
             # For the current row i, get a window of size L.
-            window = spectrogram_copy[i][j:(j + l)]
+            window = spectrogram_copy[t][f:(f + l)]
             # Get the top K elements by sorting and taking last K elements.
             top_k = np.sort(window)[len(window) - k:]
             mean_top_k = np.mean(top_k)
-            spectrogram_copy[i][j] = mean_top_k
-            augmented_spectrogram[i][j_augmented] = spectrogram_copy[i][j] - m
+            spectrogram_copy[t][f] = mean_top_k
+            augmented_spectrogram[t][f_augmented] = spectrogram_copy[t][f] - m
 
-            j_augmented += 1
-            j += d
+            f_augmented += 1
+            f += d
 
     return augmented_spectrogram.clip(min=0)
 

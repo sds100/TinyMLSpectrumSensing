@@ -8,7 +8,7 @@ from scipy.fft import fft
 file = "../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
 
-NUM_WINDOWS = 1024
+NUM_WINDOWS = 256
 SAMPLES = 256
 NFFT = 64
 data = data[:SAMPLES * NUM_WINDOWS]
@@ -61,15 +61,13 @@ for w in range(NUM_WINDOWS):
 
     spectrogram_data.append(list(result))
 
-downsampled: List[List[float]] = []
-
 target_resolution = 64
 scale_factor = NUM_WINDOWS // target_resolution
 
+downsampled: npt.NDArray[float] = np.empty(shape=target_resolution * target_resolution)
+
 for i in range(target_resolution):
     start = i * scale_factor
-
-    row = []
 
     for j in range(NFFT):
         col_sum = 0
@@ -77,9 +75,9 @@ for i in range(target_resolution):
         for k in range(scale_factor):
             col_sum = col_sum + spectrogram_data[start + k][j]
 
-        row.append(col_sum / scale_factor)
+        column_scaled = col_sum / scale_factor
 
-    downsampled.append(row)
+        downsampled[i * target_resolution + j] = column_scaled
 
 # f, t, Zxx = signal.stft(x=data, fs=fs, return_onesided=False, window="hamming", nperseg=64, noverlap=0)
 # Zxx = move_front_half_to_end(Zxx)
@@ -89,12 +87,20 @@ for i in range(target_resolution):
 # # Zxx = fft(data)
 # Zxx_abs = (np.abs(Zxx) ** 2)
 
-plt.imshow(downsampled, aspect='auto', origin='lower', cmap='viridis')
+plt.imshow(np.asarray(downsampled).reshape((64, 64)), aspect='auto', origin='lower', cmap='viridis')
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
 plt.title('Spectrogram Python')
 plt.show()
+
+augmented: List[float] = []
+
+freq_bins = NFFT
+time_bins = target_resolution
+K = 3
+L = 16
+D = 4
 
 
 def write_variable(x: List, f: TextIO, name: str, type: str):
