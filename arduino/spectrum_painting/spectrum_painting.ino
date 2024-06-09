@@ -9,7 +9,7 @@
 #include "kiss_fft.h"
 
 const uint16_t SAMPLES = 256;
-const uint16_t NFFT = 64;
+const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
 const int NUM_WINDOWS = 256;
 const int TARGET_RESOLUTION = 64;
@@ -81,7 +81,7 @@ void loop() {
   float* augmented = augment(downsampled);
   unsigned long timeAugment = millis();
 
-  printSpectrogram(augmented, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(NFFT));
+  printSpectrogram(augmented, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
   Serial.println(timeAugment - timeBegin);
 
   while (true)
@@ -125,7 +125,7 @@ int calculateNumAugmentedFreqBins(int freqBins) {
 
 float* augment(float* in) {
   // The number of "columns", i.e frequency bins in each time window.
-  int freqBins = NFFT;
+  int freqBins = TARGET_RESOLUTION;
 
   // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
@@ -212,6 +212,9 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
 
   int downsampledRowCounter = 0;
 
+  int middleFreq = NFFT / 2;
+  int startFreq = middleFreq - 32;
+
   for (int w = 0; w < NUM_WINDOWS; w++) {
     if (w % scaleFactor == 0) {
       for (int i = 0; i < NFFT; i++) {
@@ -251,7 +254,9 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
         cumulative_row[i] = cumulative_row[i] / scaleFactor;
       }
 
-      memcpy(downsampled + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row, sizeof(cumulative_row));
+      // Only take the frequencies that are filled by the Wi-Fi signal.
+
+      memcpy(downsampled + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
       downsampledRowCounter += 1;
     }
   }
