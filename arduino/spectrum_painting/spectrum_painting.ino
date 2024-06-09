@@ -75,14 +75,17 @@ void loop() {
   unsigned long timeBegin = millis();
   createDownsampledSpectrogram(real, imag);
   unsigned long timeDownsample = millis();
-  
-  // float* augmented = augment(downsampled);
+
+  // TODO: TAKE MIDDLE FREQUENCIES ONLY
+
+  float* augmented = augment(downsampled);
   unsigned long timeAugment = millis();
 
-  printSpectrogram(downsampled);
+  printSpectrogram(augmented, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(NFFT));
   Serial.println(timeAugment - timeBegin);
 
-  while(true);
+  while (true)
+    ;
 }
 
 // int runInference(int8_t* augmented, int8_t* painted) {
@@ -116,48 +119,57 @@ void loop() {
 //   return index_loc_highest_prob;
 // }
 
+int calculateNumAugmentedFreqBins(int freqBins) {
+  return ((freqBins - L) / D) + 1;
+}
 
-
-float* augment(float* in){
+float* augment(float* in) {
+  // The number of "columns", i.e frequency bins in each time window.
   int freqBins = NFFT;
+
+  // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
 
-  int augmented_width = ((freqBins - L) / D) + 1;
-  int outLength = augmented_width * timeBins;
+  int augmentedFreqBins = calculateNumAugmentedFreqBins(freqBins);
+  int outLength = augmentedFreqBins * timeBins;
 
-  float* out = (float*) calloc(outLength, sizeof(float));
+  float* out = (float*)calloc(outLength, sizeof(float));
 
-  float input_mean = 0.0; // The mean value in the whole spectrogram.
+  float input_mean = 0;  // The mean value in the whole spectrogram.
 
-  for (int i = 0; i < freqBins * timeBins; i++){
+  for (int i = 0; i < freqBins * timeBins; i++) {
     input_mean += in[i];
   }
 
   input_mean /= (freqBins * timeBins);
 
-  for (int t = 1; t < timeBins; t++){
+  for (int t = 0; t < timeBins; t++) {
     int f_augmented = 0;
     int f = 0;
 
-    while (f <= freqBins - L){
+    while (f <= freqBins - L) {
       float window[L];
-      float* startOfWindow = in + (t * timeBins + f);
-      memcpy(window, startOfWindow, L);
+      int startOfWindow = t * freqBins + f;
 
-      quickSortMiddle(window, L);
+      for (int i = 0; i < L; i++) {
+        window[i] = in[startOfWindow + i];
+      }
+
+      insertionSort(window, L);
 
       float meanTopK = 0;
 
       // IS IT SORTED IN ASCENDING OR DESCENDING ORDER???
-      for (int i = 0; i < K; i++){
-        meanTopK += window[i];
+      for (int i = 0; i < K; i++) {
+        meanTopK += window[(L - 1) - i];
       }
+
 
       meanTopK /= K;
 
-      in[t * timeBins + f] = meanTopK;
+      in[(t * freqBins) + f] = meanTopK;
 
-      out[(t * timeBins) + f_augmented] = in[(t * timeBins) + f] - input_mean;
+      out[(t * augmentedFreqBins) + f_augmented] = in[(t * freqBins) + f] - input_mean;
 
       f_augmented++;
       f += D;
@@ -167,41 +179,30 @@ float* augment(float* in){
   return out;
 }
 
-void paint(float* out){
-
+void paint(float* in) {
 }
 
 /**
   From https://github.com/bxparks/AceSorting
 **/
-void quickSortMiddle(float data[], uint16_t n) {
-  if (n <= 1) return;
+void insertionSort(float data[], uint16_t n) {
+  for (uint16_t i = 1; i < L; i++) {
+        float temp = data[i];
 
-  float pivot = data[n / 2];
-  float* left = data;
-  float* right = data + n - 1;
+        // Shift one slot to the right.
+        uint16_t j;
+        for (j = i; j > 0; j--) {
+          if (data[j - 1] <= temp) break;
+          data[j] = data[j - 1];
+        }
 
-  while (left <= right) {
-    if (*left < pivot) {
-      left++;
-    } else if (pivot < *right) {
-      right--;
-    } else {
-      swap(*left, *right);
-      left++;
-      right--;
-    }
-  }
-
-  quickSortMiddle(data, right - data + 1);
-  quickSortMiddle(left, data + n - left);
+        // This can assign 'temp' back into the original slot if no shifting was
+        // done. That's ok because T is assumed to be relatively cheap to copy, and
+        // checking for (i != j) is more expensive than just doing the extra
+        // assignment.
+        data[j] = temp;
+      }
 }
-
-void swap(float& a, float& b) {
-    float temp = a;
-    a = b;
-    b = temp;
-  }
 
 void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
   kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
@@ -256,12 +257,12 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
   }
 }
 
-void printSpectrogram(float* spectrogram) {
-  for (int w = 0; w < TARGET_RESOLUTION; w++) {
-    for (int i = 0; i < NFFT; i++) {
-      Serial.print(spectrogram[(w * NFFT) + i]);
+void printSpectrogram(float* spectrogram, int timeBins, int freqBins) {
+  for (int t = 0; t < timeBins; t++) {
+    for (int f = 0; f < freqBins; f++) {
+      Serial.print(spectrogram[(t * freqBins) + f]);
 
-      if (i < NFFT - 1) {
+      if (f < freqBins - 1) {
         Serial.print(",");
       }
     }

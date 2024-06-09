@@ -50,7 +50,7 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
 
     m = np.mean(spectrogram_copy)
 
-    for t in range(1, time_bins):
+    for t in range(time_bins):
         f_augmented = 0
         f = 0
         while f <= freq_bins - l:

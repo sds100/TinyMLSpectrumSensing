@@ -94,13 +94,47 @@ plt.ylabel('Frequency Bin')
 plt.title('Spectrogram Python')
 plt.show()
 
-augmented: List[float] = []
-
 freq_bins = NFFT
 time_bins = target_resolution
 K = 3
 L = 16
 D = 4
+
+augmented_freq_bins = ((freq_bins - L) // D) + 1
+output_length = augmented_freq_bins * time_bins
+
+augmented: npt.NDArray = np.zeros(shape=output_length)
+
+input_mean = np.mean(downsampled)
+
+for t in range(time_bins):
+    f_augmented = 0
+    f = 0
+
+    while f <= (freq_bins - L):
+        start_of_window = (t * freq_bins) + f
+        window = downsampled[start_of_window:(start_of_window + L)]
+
+        window = np.sort(window)
+        mean_top_k = 0
+
+        for i in range(K):
+            mean_top_k += window[len(window) - i - 1]
+
+        mean_top_k /= K
+
+        downsampled[(t * freq_bins) + f] = mean_top_k
+        augmented[(t * augmented_freq_bins) + f_augmented] = downsampled[(t * freq_bins) + f] - input_mean
+
+        f_augmented += 1
+        f += D
+
+plt.imshow(np.asarray(augmented).reshape((NFFT, augmented_freq_bins)))
+plt.colorbar(label='Magnitude')
+plt.xlabel('Time Window')
+plt.ylabel('Frequency Bin')
+plt.title('Spectrogram Augmented Python')
+plt.show()
 
 
 def write_variable(x: List, f: TextIO, name: str, type: str):

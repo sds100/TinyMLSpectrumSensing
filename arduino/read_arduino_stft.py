@@ -12,14 +12,7 @@ def read_data():
     spectrogram_data = []
     for _ in range(OUTPUT_LENGTH):
         real_line = ser.readline().decode('utf-8').strip()
-        # imag_line = ser.readline().decode('utf-8').strip()
         magnitudes = list(map(float, real_line.split(',')))
-        # imags = list(map(float, imag_line.split(',')))
-
-        # magnitudes = []
-        # 
-        # for (r, i) in list(zip(reals, imags)):
-        #     magnitudes.append(np.abs(complex(r, i)))
 
         spectrogram_data.append(magnitudes)
 
@@ -28,7 +21,7 @@ def read_data():
 
 def plot_spectrogram(data):
     # data = move_front_half_to_end(data.T)
-    plt.imshow(data, aspect='auto', origin='lower', cmap='viridis')
+    plt.imshow(data)
     plt.colorbar(label='Magnitude')
     plt.xlabel('Time Window')
     plt.ylabel('Frequency Bin')

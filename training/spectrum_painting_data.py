@@ -38,7 +38,7 @@ def load_spectrograms(data_dir: str,
                       snr_list: List[int],
                       sample_rate: int,
                       count: int,
-                      window_length: int) -> Dict[str, List[Spectrogram]]:
+                      window_length: int) -> Dict[int, List[Spectrogram]]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -53,10 +53,9 @@ def load_spectrograms(data_dir: str,
     :param window_length: The length of the window in the Short-Time Fourier Transform. This corresponds to the resolution
                             in the frequency axis.
 
-    :return: A dictionary that maps each class to a list of spectrograms with
-             different signal-to-noise ratios.
+    :return: A dictionary that maps each SNR to a list of Spectrograms.
     """
-    spectrograms: Dict[str, List[Spectrogram]] = {}
+    spectrograms: Dict[int, List[Spectrogram]] = {}
 
     for snr in snr_list:
         spectrograms[snr] = []
