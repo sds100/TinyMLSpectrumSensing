@@ -11,7 +11,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 256;
+const int NUM_WINDOWS = 1024;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -84,8 +84,13 @@ void loop() {
   float* painted = paint(downsampled, augmented);
   unsigned long timePaint = millis();
 
+  unsigned long timeTotal = millis();
+
   printSpectrogram(painted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
-  Serial.println(timeAugment - timeBegin);
+  Serial.println(timeDownsample - timeBegin);
+  Serial.println(timeAugment - timeDownsample);
+  Serial.println(timePaint - timeAugment);
+  Serial.println(timeTotal  - timeBegin);
 
   while (true)
     ;

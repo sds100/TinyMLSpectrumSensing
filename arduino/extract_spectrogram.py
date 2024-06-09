@@ -8,7 +8,7 @@ from scipy.fft import fft
 file = "../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
 
-NUM_WINDOWS = 256
+NUM_WINDOWS = 1024
 SAMPLES = 256
 NFFT = 256
 TARGET_RESOLUTION = 64

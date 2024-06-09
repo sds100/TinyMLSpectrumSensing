@@ -31,8 +31,14 @@ def plot_spectrogram(data):
 
 # Read the data from the serial port
 data = read_data()
-duration = int(ser.readline().strip())
-print(f"Duration = {duration} ms")
+downsample_duration = int(ser.readline().strip())
+augment_duration = int(ser.readline().strip())
+paint_duration = int(ser.readline().strip())
+total_duration = int(ser.readline().strip())
+print(f"Downsample duration = {downsample_duration} ms")
+print(f"Augment duration = {augment_duration} ms")
+print(f"Paint duration = {paint_duration} ms")
+print(f"Total duration = {total_duration} ms")
 # data = move_front_half_to_end(data.T)
 
 # Plot the spectrogram
