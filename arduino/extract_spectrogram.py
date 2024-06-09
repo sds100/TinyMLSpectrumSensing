@@ -98,7 +98,7 @@ for i in range(TARGET_RESOLUTION):
 # # Zxx = fft(data)
 # Zxx_abs = (np.abs(Zxx) ** 2)
 
-plt.imshow(np.asarray(downsampled).reshape((64, 64)), aspect='auto', origin='lower', cmap='viridis')
+plt.imshow(downsampled.reshape((64, 64)))
 plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
@@ -114,7 +114,7 @@ D = 4
 augmented_freq_bins = ((freq_bins - L) // D) + 1
 output_length = augmented_freq_bins * time_bins
 
-augmented: npt.NDArray = np.zeros(shape=output_length)
+augmented: npt.NDArray[float] = np.zeros(shape=output_length)
 
 input_mean = np.mean(downsampled)
 
@@ -135,7 +135,8 @@ for t in range(time_bins):
         mean_top_k /= K
 
         downsampled[(t * freq_bins) + f] = mean_top_k
-        augmented[(t * augmented_freq_bins) + f_augmented] = downsampled[(t * freq_bins) + f] - input_mean
+        value = downsampled[(t * freq_bins) + f] - input_mean
+        augmented[(t * augmented_freq_bins) + f_augmented] = max(0, value)
 
         f_augmented += 1
         f += D
@@ -145,6 +146,27 @@ plt.colorbar(label='Magnitude')
 plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
 plt.title('Spectrogram Augmented Python')
+plt.show()
+
+painted: npt.NDArray[float] = np.zeros(shape=output_length)
+
+for t in range(time_bins):
+    mean_time_original = 0
+
+    for f in range(freq_bins):
+        mean_time_original += downsampled[(t * freq_bins) + f]
+
+    mean_time_original /= freq_bins
+
+    for f in range(augmented_freq_bins):
+        augmented_value: float = augmented[(t * augmented_freq_bins) + f]
+        painted[(t * augmented_freq_bins) + f] = max(0, augmented_value - mean_time_original)
+
+plt.imshow(np.asarray(painted).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
+plt.colorbar(label='Magnitude')
+plt.xlabel('Time Window')
+plt.ylabel('Frequency Bin')
+plt.title('Spectrogram Painted Python')
 plt.show()
 
 

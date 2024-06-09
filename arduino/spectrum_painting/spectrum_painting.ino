@@ -81,7 +81,10 @@ void loop() {
   float* augmented = augment(downsampled);
   unsigned long timeAugment = millis();
 
-  printSpectrogram(augmented, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
+  float* painted = paint(downsampled, augmented);
+  unsigned long timePaint = millis();
+
+  printSpectrogram(painted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
   Serial.println(timeAugment - timeBegin);
 
   while (true)
@@ -133,6 +136,10 @@ float* augment(float* in) {
   int augmentedFreqBins = calculateNumAugmentedFreqBins(freqBins);
   int outLength = augmentedFreqBins * timeBins;
 
+  float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
+
+  memcpy(downsampledCopy, downsampled, sizeof(downsampled));
+
   float* out = (float*)calloc(outLength, sizeof(float));
 
   float input_mean = 0;  // The mean value in the whole spectrogram.
@@ -164,12 +171,14 @@ float* augment(float* in) {
         meanTopK += window[(L - 1) - i];
       }
 
-
       meanTopK /= K;
 
       in[(t * freqBins) + f] = meanTopK;
 
-      out[(t * augmentedFreqBins) + f_augmented] = in[(t * freqBins) + f] - input_mean;
+      float value = in[(t * freqBins) + f] - input_mean;
+      // clip the value at 0 because subtracting the mean can
+      // sometimes give negative values
+      out[(t * augmentedFreqBins) + f_augmented] = max(0, value);
 
       f_augmented++;
       f += D;
@@ -179,7 +188,36 @@ float* augment(float* in) {
   return out;
 }
 
-void paint(float* in) {
+float* paint(float* downsampled, float* augmented) {
+  // The number of "columns", i.e frequency bins in each time window.
+  int freqBins = TARGET_RESOLUTION;
+
+  // The number of rows in the spectrogram - i.e number of time bins.
+  int timeBins = TARGET_RESOLUTION;
+
+  int augmentedFreqBins = calculateNumAugmentedFreqBins(freqBins);
+  int outLength = augmentedFreqBins * timeBins;
+  float* out = (float*)calloc(outLength, sizeof(float));
+
+  for (int t = 0; t < timeBins; t++) {
+    // calculate the average value of the time bin
+    // in the downsampled spectrogram
+    float meanTimeOriginal = 0;
+
+    for (int f = 0; f < freqBins; f++) {
+      meanTimeOriginal += downsampled[(t * freqBins) + f];
+    }
+
+    meanTimeOriginal /= freqBins;
+
+    for (int f = 0; f < augmentedFreqBins; f++) {
+      float paintedValue = augmented[(t * augmentedFreqBins) + f] - meanTimeOriginal;
+
+      out[(t * augmentedFreqBins) + f] = max(0, paintedValue);
+    }
+  }
+
+  return out;
 }
 
 /**
@@ -187,21 +225,21 @@ void paint(float* in) {
 **/
 void insertionSort(float data[], uint16_t n) {
   for (uint16_t i = 1; i < L; i++) {
-        float temp = data[i];
+    float temp = data[i];
 
-        // Shift one slot to the right.
-        uint16_t j;
-        for (j = i; j > 0; j--) {
-          if (data[j - 1] <= temp) break;
-          data[j] = data[j - 1];
-        }
+    // Shift one slot to the right.
+    uint16_t j;
+    for (j = i; j > 0; j--) {
+      if (data[j - 1] <= temp) break;
+      data[j] = data[j - 1];
+    }
 
-        // This can assign 'temp' back into the original slot if no shifting was
-        // done. That's ok because T is assumed to be relatively cheap to copy, and
-        // checking for (i != j) is more expensive than just doing the extra
-        // assignment.
-        data[j] = temp;
-      }
+    // This can assign 'temp' back into the original slot if no shifting was
+    // done. That's ok because T is assumed to be relatively cheap to copy, and
+    // checking for (i != j) is more expensive than just doing the extra
+    // assignment.
+    data[j] = temp;
+  }
 }
 
 void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
