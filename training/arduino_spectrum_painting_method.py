@@ -1,5 +1,3 @@
-from typing import List, TextIO
-
 import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
@@ -7,6 +5,10 @@ from scipy.fft import fft
 
 file = "../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
+
+# This file follows the same method as the Arduino for spectrum
+# painting, so it is easier to verify what it is creating
+# is correct.
 
 NUM_WINDOWS = 128
 SAMPLES = 256
@@ -202,22 +204,3 @@ plt.xlabel('Time Window')
 plt.ylabel('Frequency Bin')
 plt.title('Spectrogram Painted Python')
 plt.show()
-
-
-def write_variable(x: List, f: TextIO, name: str, type: str):
-    f.write(f"const static {type} {name}[] PROGMEM = " + "{\n")
-
-    for (i, n) in enumerate(x):
-        f.write(f"    {n}")
-
-        if i < len(x) - 1:
-            f.write(",\n")
-
-    f.write("\n};\n\n")
-
-
-with open("spectrum_painting/data.h", "w") as f:
-    f.write("#include <avr/pgmspace.h>\n")
-
-    write_variable(real_list, f, "real", "int8_t")
-    write_variable(imag_list, f, "imag", "int8_t")

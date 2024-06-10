@@ -11,7 +11,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 128;
+const int NUM_WINDOWS = 1024;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;

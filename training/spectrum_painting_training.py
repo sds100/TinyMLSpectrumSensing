@@ -73,7 +73,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
             # sizes is that for painting to remove the WiFi signals, they must fill the
             # entire width of the spectrogram.
 
-            middle: int = len(spec.values) // 2
+            middle: int = spec.values.shape[1] // 2
             start_freq: int = middle - 32
             end_freq: int = middle + 32
 
@@ -84,6 +84,10 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
 
         include_indices: List[int] = []
 
+        # Filter out the images that don't actually contain
+        # any Bluetooth signals even though they are labelled as such.
+        # A naive approach is to just see if the Bluetooth-only image
+        # contains (almost) no signals.
         for (i, s) in enumerate(sliced_spectrograms["B"]):
             (augmented, painted) = create_augmented_painted_images(s, options)
 

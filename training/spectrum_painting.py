@@ -6,7 +6,7 @@ from spectrogram import Spectrogram
 
 
 def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
-    return Spectrogram(values=spec.values[start:end], label=spec.label)
+    return Spectrogram(values=spec.values.T[start:end].T, label=spec.label)
 
 
 def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDArray:
@@ -24,7 +24,7 @@ def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDA
     downsampled_spec_values = downscale_local_mean(spectrogram, (freq_factor, time_factor))[:resolution, :resolution]
 
     # make sure the spectrogram is still in the correct orientation
-    downsampled_spec_values = np.flip(downsampled_spec_values, axis=1)
+    # downsampled_spec_values = np.flip(downsampled_spec_values, axis=1)
 
     assert downsampled_spec_values.shape == (resolution, resolution)
     return downsampled_spec_values
@@ -42,7 +42,7 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
 
     # copy the spectrogram so modifying the values in-place
     # does not change the argument.
-    spectrogram_copy = np.copy(spectrogram).T
+    spectrogram_copy = np.copy(spectrogram)
     (time_bins, freq_bins) = spectrogram_copy.shape
 
     augmented_width = ((freq_bins - l) // d) + 1
@@ -70,7 +70,7 @@ def augment_spectrogram(spectrogram: npt.NDArray, k: int, l: int, d: int) -> npt
 
 def paint_spectrogram(original: npt.NDArray, augmented: npt.NDArray) -> npt.NDArray:
     painted_spectrogram = np.zeros(shape=augmented.shape)
-    mean_original_rows = np.mean(original, axis=0)
+    mean_original_rows = np.mean(original, axis=1)
 
     for row in range(len(augmented)):
         painted_spectrogram[row] = augmented[row] - mean_original_rows[row]
