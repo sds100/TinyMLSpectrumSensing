@@ -135,21 +135,25 @@ def convert_to_tensorflow_lite(model: models.Model,
         Convert test images to float32 and the correct dimensions
         for TensorFlow to do full-integer quantization.
         """
-        repr_augmented_images = np.copy(augmented_test_images)
+        repr_augmented_images = np.copy(np.asarray(augmented_test_images))
         repr_augmented_images = [img.astype(np.float32) for img in repr_augmented_images]
 
         for img in repr_augmented_images:
             img.shape += (1,)
 
-        repr_painted_images = np.copy(painted_test_images)
+        repr_painted_images = np.copy(np.asarray(painted_test_images))
         repr_painted_images = [img.astype(np.float32) for img in repr_painted_images]
 
         for img in repr_painted_images:
             img.shape += (1,)
 
-        augmented_images = tf.data.Dataset.from_tensor_slices(repr_augmented_images).batch(1).take(100)
-        painted_images = tf.data.Dataset.from_tensor_slices(repr_painted_images).batch(1).take(100)
-        for aug_value, painted_value in list(zip(augmented_images, painted_images)):
+        np.random.shuffle(repr_augmented_images)
+        np.random.shuffle(repr_painted_images)
+
+        repr_augmented_images = (np.expand_dims(repr_augmented_images, 0))
+        repr_painted_images = (np.expand_dims(repr_painted_images, 0))
+
+        for aug_value, painted_value in list(zip(repr_augmented_images, repr_painted_images)):
             # Model has only one input so each data point has one element.
             yield [aug_value, painted_value]
 

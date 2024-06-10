@@ -138,37 +138,6 @@ void loop() {
     ;
 }
 
-// int runInference(char* augmented, char* painted) {
-//   size_t inputLength = inputAugmented->bytes;
-
-//   for (unsigned int i = 0; i < inputLength; i++) {
-//     inputAugmented->data.uint8[i] = augmented[i];
-//   }
-
-//   for (unsigned int i = 0; i < inputLength; i++) {
-//     inputPainted->data.uint8[i] = painted[i];
-//   }
-
-//   TfLiteStatus invoke_status = interpreter->Invoke();
-
-//   if (invoke_status != kTfLiteOk) {
-//     Serial.println("Invoke failed " + String(invoke_status));
-//     return -1;
-//   }
-
-//   int index_loc_highest_prob = -1;
-//   float highest_prob = -1.0;
-
-//   for (int i = 0; i < no_classes; i++) {
-//     if (output->data.uint8[i] > highest_prob) {
-//       highest_prob = output->data.uint8[i];
-//       index_loc_highest_prob = i;
-//     }
-//   }
-
-//   return index_loc_highest_prob;
-// }
-
 void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float* out) {
   // DOES LOADING DATA INTO MEMORY SPEED IT UP?
   float cumulative_row[NFFT];
@@ -369,17 +338,3 @@ void insertionSort(float data[], uint16_t n) {
     data[j] = temp;
   }
 }
-
-// void printSpectrogram(char* spectrogram, int timeBins, int freqBins) {
-//   for (int t = 0; t < timeBins; t++) {
-//     for (int f = 0; f < freqBins; f++) {
-//       Serial.print((uint8_t) spectrogram[(t * freqBins) + f]);
-
-//       if (f < freqBins - 1) {
-//         Serial.print(F(","));
-//       }
-//     }
-
-//     Serial.println();
-//   }
-// }

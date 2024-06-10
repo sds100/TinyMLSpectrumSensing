@@ -79,26 +79,20 @@ def paint_spectrogram(original: npt.NDArray, augmented: npt.NDArray) -> npt.NDAr
     return painted_spectrogram.clip(min=0)
 
 
-def digitize_spectrogram(spectrogram: npt.NDArray[np.float32], color_depth: int) -> npt.NDArray[np.uint8]:
+def digitize_spectrogram(spectrogram: npt.NDArray[np.float32]) -> npt.NDArray[np.uint8]:
     """
     Digitize the spectrogram from a range of floating point numbers to discrete integers.
 
     :param spectrogram: The spectrogram to digitize.
-    :param color_depth: How many discrete values one "pixel" in the spectrogram can have. Since
-                        this returns a byte array then the max value is 256.
     """
     max_value: float = spectrogram.max()
-    scaled_spectrogram: npt.NDArray[np.float32]
+    scaled_spectrogram: npt.NDArray = np.zeros(spectrogram.shape)
 
     if max_value == 0:
-        scaled_spectrogram = spectrogram
+        return scaled_spectrogram.astype(np.uint8)
     else:
-        scale: float = color_depth / max_value
+        scale: float = 255 / max_value
         spectrogram = spectrogram.clip(min=0)
         scaled_spectrogram = spectrogram * scale
 
-    # Must be UNSIGNED int so that the bins are
-    # monotonically increasing.
-    bins = np.arange(color_depth, dtype=np.uint8)
-    bin_indices = np.digitize(scaled_spectrogram, bins)
-    return bins[bin_indices - 1]
+    return scaled_spectrogram.astype(np.uint8)

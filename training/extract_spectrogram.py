@@ -5,10 +5,10 @@ import numpy.typing as npt
 from matplotlib import pyplot as plt
 from scipy.fft import fft
 
-file = "../training/data/numpy/SNR30_B.npy"
+file = "../training/data/numpy/SNR30_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
 
-NUM_WINDOWS = 1024
+NUM_WINDOWS = 128
 SAMPLES = 256
 NFFT = 256
 TARGET_RESOLUTION = 64

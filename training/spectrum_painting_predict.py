@@ -41,12 +41,7 @@ def predict_lite_model(model: List[bytes],
     x_painted = np.copy(x_painted)
     
     x_augmented.shape += (1,)
-    x_augmented = (np.expand_dims(x_augmented, 0))
-    x_augmented = x_augmented.astype(np.uint8)
-
     x_painted.shape += (1,)
-    x_painted = (np.expand_dims(x_painted, 0))
-    x_painted = x_painted.astype(np.uint8)
 
     interpreter = tf.lite.Interpreter(model_content=model)
     interpreter.allocate_tensors()
@@ -54,8 +49,8 @@ def predict_lite_model(model: List[bytes],
     input_details = interpreter.get_input_details()[0]
     output_details = interpreter.get_output_details()[0]
 
-    interpreter.set_tensor(0, x_augmented)
-    interpreter.set_tensor(1, x_painted)
+    interpreter.set_tensor(0, [x_augmented])
+    interpreter.set_tensor(1, [x_painted])
 
     interpreter.invoke()
 
