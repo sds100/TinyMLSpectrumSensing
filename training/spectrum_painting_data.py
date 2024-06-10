@@ -36,9 +36,9 @@ def convert_matlab_to_numpy(matlab_dir: str,
 def load_spectrograms(data_dir: str,
                       classes: List[str],
                       snr_list: List[int],
-                      sample_rate: int,
-                      count: int,
-                      window_length: int) -> Dict[int, List[Spectrogram]]:
+                      windows_per_spectrogram: int,
+                      window_length: int,
+                      nfft: int) -> Dict[int, List[Spectrogram]]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -48,10 +48,7 @@ def load_spectrograms(data_dir: str,
                     The .npy files should contain an array of np.complex128 numbers.
     :param classes: The classes to load.
     :param snr_list: The signal-to-noise ratios to load.
-    :param sample_rate: The sample rate of the data.
-    :param count: How many lines in the input files to read from.
-    :param window_length: The length of the window in the Short-Time Fourier Transform. This corresponds to the resolution
-                            in the frequency axis.
+    :param window_length: The length of each window to perform the FFT on.
 
     :return: A dictionary that maps each SNR to a list of Spectrograms.
     """
@@ -63,8 +60,15 @@ def load_spectrograms(data_dir: str,
         for label in classes:
             data = np.load(f"{data_dir}/SNR{snr}_{label}.npy")
 
-            spectrogram = create_spectrogram(data[:count], sample_rate, label, window_length)
-            spectrograms[snr].append(spectrogram)
+            samples_per_spectrogram = windows_per_spectrogram * window_length
+            spectrogram_count = len(data) // samples_per_spectrogram
+
+            for i in range(spectrogram_count):
+                start = i * samples_per_spectrogram
+                end = start + samples_per_spectrogram
+                data_slice = data[start:end]
+                spectrogram = create_spectrogram(data_slice, label, windows_per_spectrogram, window_length, nfft)
+                spectrograms[snr].append(spectrogram)
 
             del data
 

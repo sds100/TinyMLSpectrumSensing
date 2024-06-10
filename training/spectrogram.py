@@ -26,26 +26,26 @@ def move_front_half_to_end(array: npt.NDArray) -> npt.NDArray:
     return np.concatenate((array[n // 2:], array[:n // 2]))
 
 
-def create_spectrogram(x: npt.NDArray[np.complex64], fs: int, label: str, window_length: int) -> Spectrogram:
+def create_spectrogram(x: npt.NDArray[np.complex64],
+                       label: str,
+                       windows: int,
+                       window_length: int,
+                       nfft: int) -> Spectrogram:
     """
     Create a spectrogram of a signal using the same simplified STFT method that will be done on the Arduino.
     This is about 2x faster than calling the scipy STFT function.
     :param x: The signal
-    :param fs: The sample rate in Hz.
     :return: A Spectrogram instance that contains the frequencies, time and values.
     """
-    samples = 256
-    windows = len(x) // 256
-
-    spectrogram_values = np.empty(shape=(windows, window_length))
+    spectrogram_values = np.empty(shape=(windows, nfft))
 
     for w in range(windows):
-        start = w * samples
-        end = start + samples
+        start = w * window_length
+        end = start + window_length
 
         fft_input = x[start:end]
 
-        result = fft(fft_input, norm="backward", n=window_length)
+        result = fft(fft_input, norm="backward", n=nfft)
 
         result = np.abs(result)
 

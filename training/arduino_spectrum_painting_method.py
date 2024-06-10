@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
@@ -10,8 +12,8 @@ data: npt.NDArray[np.complex64] = np.load(file)
 # painting, so it is easier to verify what it is creating
 # is correct.
 
-NUM_WINDOWS = 128
-SAMPLES = 256
+NUM_WINDOWS = 64
+SAMPLES = 4096
 NFFT = 256
 TARGET_RESOLUTION = 64
 

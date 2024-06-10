@@ -6,12 +6,11 @@ import numpy.typing as npt
 from sklearn.model_selection import train_test_split
 
 import spectrum_painting as sp
-from training.spectrogram import Spectrogram, split_spectrogram
+from training.spectrogram import Spectrogram
 
 
 @dataclass
 class SpectrumPaintingTrainingOptions:
-    spectrogram_length: int
     downsample_resolution: int
     k: int
     l: int
@@ -68,6 +67,9 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
         sliced_spectrograms: Dict[str, List[npt.NDArray]] = {}
 
         for spec in spectrogram_list:
+            if not sliced_spectrograms.__contains__(spec.label):
+                sliced_spectrograms[spec.label] = []
+
             # Taking the middle of the spectrogram is not needed if you use
             # high D (step size) values. The reason why you may need it for small step
             # sizes is that for painting to remove the WiFi signals, they must fill the
@@ -79,8 +81,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
 
             spec = sp.take_frequencies(spec, start_freq, end_freq)
 
-            slices = split_spectrogram(spec.values, duration=options.spectrogram_length)
-            sliced_spectrograms[spec.label] = slices
+            sliced_spectrograms[spec.label].append(spec.values)
 
         include_indices: List[int] = []
 
@@ -94,7 +95,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
             mean_painted = np.mean(painted)
             max_painted = np.max(painted)
 
-            if mean_painted < 1:
+            if mean_painted < 5:
                 removed_image_count += 1
             else:
                 include_indices.append(i)
@@ -110,7 +111,7 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
                 snr_list.append(snr)
 
             label_names.append(label)
-            
+
     print(f"Removed {removed_image_count} images that didn't actually contain any Bluetooth signals.")
 
     x_combined = np.stack((digitized_augmented_slices, digitized_painted_slices), axis=3)
