@@ -5,16 +5,13 @@
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
-#include "mbed.h"
-#include "mbed_mem_trace.h"
-
 #include "data.h"
 #include "kiss_fft.h"
 
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 1024;
+const int NUM_WINDOWS = 128;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -27,6 +24,13 @@ kiss_fft_cpx fftOut[NFFT];
 kiss_fft_cfg kssCfg;
 
 float downsampled[TARGET_RESOLUTION * TARGET_RESOLUTION];
+float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
+
+float augmented[13 * TARGET_RESOLUTION];
+char digitizedAugmented[13 * TARGET_RESOLUTION];
+
+float painted[13 * TARGET_RESOLUTION];
+char digitizedPainted[13 * TARGET_RESOLUTION];
 
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
@@ -61,31 +65,20 @@ void setup() {
 }
 
 void loop() {
-  printMemoryInfo();
   unsigned long timeBegin = millis();
 
   createDownsampledSpectrogram(real, imag, downsampled);
   unsigned long timeDownsample = millis();
 
-  float* augmented = augment(downsampled);
-  char* digitizedAugmented = digitize(augmented);
+  augment(downsampled, augmented);
+  digitize(augmented, digitizedAugmented);
   unsigned long timeAugment = millis();
 
-  float* painted = paint(downsampled, augmented);
-  char* digitizedPainted = digitize(painted);
+  paint(downsampled, augmented, painted);
+  digitize(painted, digitizedPainted);
   unsigned long timePaint = millis();
 
-  // free(downsampled);
-  // downsampled = nullptr;
-  // free(augmented);
-  // augmented = nullptr;
-  // free(painted);
-  // painted = nullptr;
-
-  // size_t inputLength = inputAugmented->bytes;
-  // Serial.println(inputLength);
-
-  // // int label = runInference(digitizedAugmented, digitizedPainted);
+  // int predictedLabel = runInference(digitizedAugmented, digitizedPainted);
   size_t inputLength = inputAugmented->bytes;
 
   for (unsigned int i = 0; i < inputLength; i++) {
@@ -103,13 +96,13 @@ void loop() {
     return;
   }
 
-  int index_loc_highest_prob = -1;
-  float highest_prob = -1.0;
+  int predictedLabel = -1;
+  float highestProbability = -1.0;
 
   for (int i = 0; i < no_classes; i++) {
-    if (output->data.uint8[i] > highest_prob) {
-      highest_prob = output->data.uint8[i];
-      index_loc_highest_prob = i;
+    if (output->data.uint8[i] > highestProbability) {
+      highestProbability = output->data.uint8[i];
+      predictedLabel = i;
     }
   }
 
@@ -124,7 +117,7 @@ void loop() {
 
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
-      Serial.print((uint8_t) digitizedPainted[(t * freqBins) + f]);
+      Serial.print((uint8_t)digitizedPainted[(t * freqBins) + f]);
 
       if (f < freqBins - 1) {
         Serial.print(F(","));
@@ -139,28 +132,13 @@ void loop() {
   Serial.println(timePaint - timeAugment);
   Serial.println(timeInference - timePaint);
   Serial.println(timeTotal - timeBegin);
-  Serial.println(index_loc_highest_prob);
+  Serial.println(predictedLabel);
 
   while (true)
     ;
 }
-void printMemoryInfo() {
-    // allocate enough room for every thread's stack statistics
-    int cnt = osThreadGetCount();
-    mbed_stats_stack_t *stats = (mbed_stats_stack_t*) malloc(cnt * sizeof(mbed_stats_stack_t));
 
-    cnt = mbed_stats_stack_get_each(stats, cnt);
-    for (int i = 0; i < cnt; i++) {
-        printf("Thread: 0x%lX, Stack size: %lu / %lu\r\n", stats[i].thread_id, stats[i].max_size, stats[i].reserved_size);
-    }
-    free(stats);
-
-    // Grab the heap statistics
-    mbed_stats_heap_t heap_stats;
-    mbed_stats_heap_get(&heap_stats);
-    printf("Heap size: %lu / %lu bytes\r\n", heap_stats.current_size, heap_stats.reserved_size);
-}
-// int runInference(uint8_t* augmented, uint8_t* painted) {
+// int runInference(char* augmented, char* painted) {
 //   size_t inputLength = inputAugmented->bytes;
 
 //   for (unsigned int i = 0; i < inputLength; i++) {
@@ -247,15 +225,13 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
       downsampledRowCounter += 1;
     }
   }
-
-  // kiss_fft_free(cfg);
 }
 
 int calculateNumAugmentedFreqBins(int freqBins) {
   return ((freqBins - L) / D) + 1;
 }
 
-float* augment(float* in) {
+void augment(float* in, float* out) {
   // The number of "columns", i.e frequency bins in each time window.
   int freqBins = TARGET_RESOLUTION;
 
@@ -263,13 +239,6 @@ float* augment(float* in) {
   int timeBins = TARGET_RESOLUTION;
 
   int augmentedFreqBins = calculateNumAugmentedFreqBins(freqBins);
-  int outLength = augmentedFreqBins * timeBins;
-
-  float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
-
-  memcpy(downsampledCopy, in, sizeof(in));
-
-  float* out = (float*)calloc(outLength, sizeof(float));
 
   float input_mean = 0;  // The mean value in the whole spectrogram.
 
@@ -313,11 +282,9 @@ float* augment(float* in) {
       f += D;
     }
   }
-
-  return out;
 }
 
-float* paint(float* downsampled, float* augmented) {
+void paint(float* downsampled, float* augmented, float* out) {
   // The number of "columns", i.e frequency bins in each time window.
   int freqBins = TARGET_RESOLUTION;
 
@@ -325,8 +292,6 @@ float* paint(float* downsampled, float* augmented) {
   int timeBins = TARGET_RESOLUTION;
 
   int augmentedFreqBins = calculateNumAugmentedFreqBins(freqBins);
-  int outLength = augmentedFreqBins * timeBins;
-  float* out = (float*)calloc(outLength, sizeof(float));
 
   for (int t = 0; t < timeBins; t++) {
     // calculate the average value of the time bin
@@ -345,17 +310,13 @@ float* paint(float* downsampled, float* augmented) {
       out[(t * augmentedFreqBins) + f] = max(0, paintedValue);
     }
   }
-
-  return out;
 }
 
-char* digitize(float* in) {
+void digitize(float* in, char* out) {
   // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
   int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
 
-  int outLength = freqBins * timeBins;
-  char* out = (char*)calloc(outLength, sizeof(char));
   float maxValue = 0;
 
   for (int t = 0; t < timeBins; t++) {
@@ -368,7 +329,10 @@ char* digitize(float* in) {
   // if the max value is 0 then there is no data to scale so
   // just return a spectrogram with all zeros.
   if (maxValue == 0) {
-    return out;
+    for (int i = 0; i < timeBins * freqBins; i++) {
+      out[i] = 0;
+    }
+    return;
   }
 
   // We want to store the values in one byte so 255 is the max value.
@@ -382,8 +346,6 @@ char* digitize(float* in) {
       out[index] = value;
     }
   }
-
-  return out;
 }
 
 /**
