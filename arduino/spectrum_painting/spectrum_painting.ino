@@ -1,6 +1,8 @@
 #include "TensorFlowLite.h"
 
 #include "model.h"
+#include "augmented_image.h"
+#include "painted_image.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 // #include "tensorflow/lite/micro/micro_log.h"
@@ -19,13 +21,20 @@ const int K = 3;
 const int L = 16;
 const int D = 4;
 
+kiss_fft_cpx fftIn[SAMPLES];
+kiss_fft_cpx fftOut[NFFT];
+
+kiss_fft_cfg kssCfg;
+
+float downsampled[TARGET_RESOLUTION * TARGET_RESOLUTION];
+
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* inputAugmented = nullptr;
 TfLiteTensor* inputPainted = nullptr;
 TfLiteTensor* output = nullptr;
 
-constexpr int tensor_arena_size = 50 * 1024;
+constexpr int tensor_arena_size = 100 * 1024;
 byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 const int no_classes = 7;
@@ -34,7 +43,7 @@ const char* labels[no_classes] = {
 };
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.setTimeout(4000);
   // wait for serial initialization so printing in setup works.
   while (!Serial)
@@ -56,30 +65,29 @@ void setup() {
 
   TfLiteStatus allocate_status = interpreter->AllocateTensors();
 
-  Serial.println(F("Allocated"));
-
   if (allocate_status != kTfLiteOk) {
     Serial.println("ALLOCATE TENSORS FAILED");
-    MicroPrintf("AllocateTensors() failed");
   }
 
   inputAugmented = interpreter->input(0);
   inputPainted = interpreter->input(1);
   output = interpreter->output(0);
+
+  kssCfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
 }
 
 void loop() {
   unsigned long timeBegin = millis();
-  float* downsampled = createDownsampledSpectrogram(real, imag);
+
+  createDownsampledSpectrogram(real, imag, downsampled);
   unsigned long timeDownsample = millis();
 
   float* augmented = augment(downsampled);
-  uint8_t* digitizedAugmented = digitize(augmented);
+  char* digitizedAugmented = digitize(augmented);
   unsigned long timeAugment = millis();
-  Serial.println(F("Augmented"));
 
   float* painted = paint(downsampled, augmented);
-  uint8_t* digitizedPainted = digitize(painted);
+  char* digitizedPainted = digitize(painted);
   unsigned long timePaint = millis();
 
   // free(downsampled);
@@ -92,35 +100,33 @@ void loop() {
   // size_t inputLength = inputAugmented->bytes;
   // Serial.println(inputLength);
 
-  // int label = runInference(digitizedAugmented, digitizedPainted);
+  // // int label = runInference(digitizedAugmented, digitizedPainted);
   size_t inputLength = inputAugmented->bytes;
-  Serial.println(inputLength);
-  Serial.println(inputAugmented->type);
 
   for (unsigned int i = 0; i < inputLength; i++) {
-    inputAugmented->data.uint8[i] = (byte) digitizedAugmented[i];
+    inputAugmented->data.uint8[i] = digitizedAugmented[i];
   }
 
   for (unsigned int i = 0; i < inputLength; i++) {
-    inputPainted->data.uint8[i] = (byte) digitizedPainted[i];
+    inputPainted->data.uint8[i] = digitizedPainted[i];
   }
 
   TfLiteStatus invoke_status = interpreter->Invoke();
 
-  // if (invoke_status != kTfLiteOk) {
-  //   Serial.println("Invoke failed " + String(invoke_status));
-  //   // return -1;
-  // }
+  if (invoke_status != kTfLiteOk) {
+    Serial.println("Invoke failed " + String(invoke_status));
+    return;
+  }
 
-  // int index_loc_highest_prob = -1;
-  // float highest_prob = -1.0;
+  int index_loc_highest_prob = -1;
+  float highest_prob = -1.0;
 
-  // for (int i = 0; i < no_classes; i++) {
-  //   if (output->data.uint8[i] > highest_prob) {
-  //     highest_prob = output->data.uint8[i];
-  //     index_loc_highest_prob = i;
-  //   }
-  // }
+  for (int i = 0; i < no_classes; i++) {
+    if (output->data.uint8[i] > highest_prob) {
+      highest_prob = output->data.uint8[i];
+      index_loc_highest_prob = i;
+    }
+  }
 
   unsigned long timeInference = millis();
 
@@ -133,7 +139,7 @@ void loop() {
 
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
-      Serial.print(digitizedPainted[(t * freqBins) + f]);
+      Serial.print((uint8_t) digitizedPainted[(t * freqBins) + f]);
 
       if (f < freqBins - 1) {
         Serial.print(F(","));
@@ -148,7 +154,7 @@ void loop() {
   Serial.println(timePaint - timeAugment);
   Serial.println(timeInference - timePaint);
   Serial.println(timeTotal - timeBegin);
-  // Serial.println(index_loc_highest_prob);
+  Serial.println(index_loc_highest_prob);
 
   while (true)
     ;
@@ -185,15 +191,9 @@ void loop() {
 //   return index_loc_highest_prob;
 // }
 
-float* createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
+void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float* out) {
   // DOES LOADING DATA INTO MEMORY SPEED IT UP?
-  kiss_fft_cpx fftIn[SAMPLES];
-  kiss_fft_cpx fftOut[NFFT];
-
-  kiss_fft_cfg cfg = kiss_fft_alloc(NFFT, false, NULL, NULL);
-
   float cumulative_row[NFFT];
-  float* downsampled = (float*)calloc(NFFT * TARGET_RESOLUTION, sizeof(float));
 
   int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
 
@@ -217,7 +217,7 @@ float* createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
       fftIn[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
     }
 
-    kiss_fft(cfg, fftIn, fftOut);
+    kiss_fft(kssCfg, fftIn, fftOut);
 
     int middle = NFFT / 2;
 
@@ -243,13 +243,12 @@ float* createDownsampledSpectrogram(const int8_t* real, const int8_t* imag) {
 
       // Only take the frequencies that are filled by the Wi-Fi signal.
 
-      memcpy(downsampled + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
+      memcpy(out + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
       downsampledRowCounter += 1;
     }
   }
 
-  kiss_fft_free(cfg);
-  return downsampled;
+  // kiss_fft_free(cfg);
 }
 
 int calculateNumAugmentedFreqBins(int freqBins) {
@@ -350,13 +349,13 @@ float* paint(float* downsampled, float* augmented) {
   return out;
 }
 
-uint8_t* digitize(float* in) {
+char* digitize(float* in) {
   // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
   int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
 
   int outLength = freqBins * timeBins;
-  uint8_t* out = (uint8_t*)calloc(outLength, sizeof(uint8_t));
+  char* out = (char*)calloc(outLength, sizeof(char));
   float maxValue = 0;
 
   for (int t = 0; t < timeBins; t++) {
@@ -378,7 +377,7 @@ uint8_t* digitize(float* in) {
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
       int index = (t * freqBins) + f;
-      uint8_t value = (uint8_t)(in[index] * scaleFactor);
+      char value = (char)(in[index] * scaleFactor);
 
       out[index] = value;
     }
@@ -409,16 +408,16 @@ void insertionSort(float data[], uint16_t n) {
   }
 }
 
-void printSpectrogram(uint8_t* spectrogram, int timeBins, int freqBins) {
-  for (int t = 0; t < timeBins; t++) {
-    for (int f = 0; f < freqBins; f++) {
-      Serial.print(F(spectrogram[(t * freqBins) + f]));
+// void printSpectrogram(char* spectrogram, int timeBins, int freqBins) {
+//   for (int t = 0; t < timeBins; t++) {
+//     for (int f = 0; f < freqBins; f++) {
+//       Serial.print((uint8_t) spectrogram[(t * freqBins) + f]);
 
-      if (f < freqBins - 1) {
-        Serial.print(F(","));
-      }
-    }
+//       if (f < freqBins - 1) {
+//         Serial.print(F(","));
+//       }
+//     }
 
-    Serial.println();
-  }
-}
+//     Serial.println();
+//   }
+// }
