@@ -27,10 +27,10 @@ float downsampled[TARGET_RESOLUTION * TARGET_RESOLUTION];
 float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
 
 float augmented[13 * TARGET_RESOLUTION];
-char digitizedAugmented[13 * TARGET_RESOLUTION];
+uint8_t digitizedAugmented[13 * TARGET_RESOLUTION];
 
 float painted[13 * TARGET_RESOLUTION];
-char digitizedPainted[13 * TARGET_RESOLUTION];
+uint8_t digitizedPainted[13 * TARGET_RESOLUTION];
 
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
@@ -55,7 +55,7 @@ void setup() {
 
   interpreter = new tflite::MicroInterpreter(model, resolver, tensor_arena, tensor_arena_size);
 
-  TfLiteStatus allocate_status = interpreter->AllocateTensors();
+  interpreter->AllocateTensors();
 
   inputAugmented = interpreter->input(0);
   inputPainted = interpreter->input(1);
@@ -78,7 +78,6 @@ void loop() {
   digitize(painted, digitizedPainted);
   unsigned long timePaint = millis();
 
-  // int predictedLabel = runInference(digitizedAugmented, digitizedPainted);
   size_t inputLength = inputAugmented->bytes;
 
   for (unsigned int i = 0; i < inputLength; i++) {
@@ -279,7 +278,7 @@ void paint(float* downsampled, float* augmented, float* out) {
   }
 }
 
-void digitize(float* in, char* out) {
+void digitize(float* in, uint8_t* out) {
   // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
   int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
@@ -308,7 +307,7 @@ void digitize(float* in, char* out) {
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
       int index = (t * freqBins) + f;
-      char value = (char)(in[index] * scaleFactor);
+      uint8_t value = (uint8_t)(in[index] * scaleFactor);
 
       out[index] = value;
     }
