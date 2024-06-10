@@ -8,10 +8,10 @@
 #include "data.h"
 #include "kiss_fft.h"
 
-const uint16_t SAMPLES = 4096;
+const uint16_t SAMPLES = 512;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 64;
+const int NUM_WINDOWS = 512;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
