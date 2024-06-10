@@ -12,8 +12,8 @@ data: npt.NDArray[np.complex64] = np.load(file)
 # painting, so it is easier to verify what it is creating
 # is correct.
 
-NUM_WINDOWS = 64
-SAMPLES = 4096
+NUM_WINDOWS = 256
+SAMPLES = 1024
 NFFT = 256
 TARGET_RESOLUTION = 64
 

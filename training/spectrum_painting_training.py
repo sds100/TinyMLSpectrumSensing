@@ -3,6 +3,7 @@ from typing import List, Dict
 
 import numpy as np
 import numpy.typing as npt
+from skimage.transform import downscale_local_mean
 from sklearn.model_selection import train_test_split
 
 import spectrum_painting as sp
@@ -104,6 +105,9 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
             for i in include_indices:
                 s = slices[i]
                 (augmented, painted) = create_augmented_painted_images(s, options)
+
+                # augmented = downscale_local_mean(augmented, (2, 1))
+                # painted = downscale_local_mean(painted, (2, 1))
 
                 digitized_augmented_slices.append(augmented)
                 digitized_painted_slices.append(painted)

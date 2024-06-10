@@ -8,10 +8,10 @@
 #include "data.h"
 #include "kiss_fft.h"
 
-const uint16_t SAMPLES = 512;
+const int NUM_WINDOWS = 256;
+const uint16_t SAMPLES = 1024;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 512;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -109,8 +109,6 @@ void loop() {
   unsigned long timeInference = millis();
 
   unsigned long timeTotal = millis();
-
-  // printSpectrogram(digitizedPainted, TARGET_RESOLUTION, calculateNumAugmentedFreqBins(TARGET_RESOLUTION));
 
   int timeBins = TARGET_RESOLUTION;
   int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);

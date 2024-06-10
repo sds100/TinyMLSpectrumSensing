@@ -11,15 +11,15 @@ from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 def create_channel(input: layers.Input) -> layers.Layer:
     # Padding "same" adds zero-padding.
-    layer = layers.Conv2D(filters=8, kernel_size=(7, 7), activation='relu', padding='same')(input)
+    layer = layers.Conv2D(filters=2, kernel_size=(7, 7), activation='relu', padding='same')(input)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=8, kernel_size=(5, 5), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=2, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=8, kernel_size=(3, 3), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=2, kernel_size=(3, 3), activation='relu', padding='same')(layer)
     layer = layers.BatchNormalization()(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
@@ -81,7 +81,8 @@ def fit_model(model: models.Model,
             # are required to do this.
             print("\r", f"Epoch: {epoch}, Val. accuracy = {logs.get('val_accuracy')}", end="")
 
-    early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=early_stopping_patience)
+    early_stopping_callback = keras.callbacks.EarlyStopping(monitor='loss', patience=early_stopping_patience,
+                                                            min_delta=0.02)
     # convert ints to the type of int that can be used in a Tensor
     history = model.fit(x=[train_test_sets.x_train_augmented, train_test_sets.x_train_painted],
                         y=train_test_sets.y_train,
