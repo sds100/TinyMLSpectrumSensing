@@ -5,6 +5,9 @@
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
+#include "mbed.h"
+#include "mbed_mem_trace.h"
+
 #include "data.h"
 #include "kiss_fft.h"
 
@@ -58,6 +61,7 @@ void setup() {
 }
 
 void loop() {
+  printMemoryInfo();
   unsigned long timeBegin = millis();
 
   createDownsampledSpectrogram(real, imag, downsampled);
@@ -140,7 +144,22 @@ void loop() {
   while (true)
     ;
 }
+void printMemoryInfo() {
+    // allocate enough room for every thread's stack statistics
+    int cnt = osThreadGetCount();
+    mbed_stats_stack_t *stats = (mbed_stats_stack_t*) malloc(cnt * sizeof(mbed_stats_stack_t));
 
+    cnt = mbed_stats_stack_get_each(stats, cnt);
+    for (int i = 0; i < cnt; i++) {
+        printf("Thread: 0x%lX, Stack size: %lu / %lu\r\n", stats[i].thread_id, stats[i].max_size, stats[i].reserved_size);
+    }
+    free(stats);
+
+    // Grab the heap statistics
+    mbed_stats_heap_t heap_stats;
+    mbed_stats_heap_get(&heap_stats);
+    printf("Heap size: %lu / %lu bytes\r\n", heap_stats.current_size, heap_stats.reserved_size);
+}
 // int runInference(uint8_t* augmented, uint8_t* painted) {
 //   size_t inputLength = inputAugmented->bytes;
 

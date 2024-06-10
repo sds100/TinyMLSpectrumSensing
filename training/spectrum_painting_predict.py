@@ -37,6 +37,9 @@ def predict_full_model_one_channel(model: models.Model, x_test: npt.NDArray[np.u
 def predict_lite_model(model: List[bytes],
                        x_augmented: npt.NDArray[np.uint8],
                        x_painted: npt.NDArray[np.uint8]) -> int:
+    x_augmented = np.copy(x_augmented)
+    x_painted = np.copy(x_painted)
+    
     x_augmented.shape += (1,)
     x_augmented = (np.expand_dims(x_augmented, 0))
     x_augmented = x_augmented.astype(np.uint8)
@@ -49,7 +52,6 @@ def predict_lite_model(model: List[bytes],
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()[0]
-    print(input_details)
     output_details = interpreter.get_output_details()[0]
 
     interpreter.set_tensor(0, x_augmented)

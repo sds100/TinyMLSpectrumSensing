@@ -5,14 +5,16 @@ import numpy.typing as npt
 from matplotlib import pyplot as plt
 from scipy.fft import fft
 
-file = "../training/data/numpy/SNR30_ZBW.npy"
+file = "../training/data/numpy/SNR30_B.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
 
-NUM_WINDOWS = 128
+NUM_WINDOWS = 1024
 SAMPLES = 256
 NFFT = 256
 TARGET_RESOLUTION = 64
-data = data[:SAMPLES * NUM_WINDOWS]
+
+data_offset = 1000000
+data = data[data_offset:data_offset + (SAMPLES * NUM_WINDOWS)]
 
 fs = 88000000
 

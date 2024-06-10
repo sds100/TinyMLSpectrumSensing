@@ -8,13 +8,14 @@ from sklearn.metrics import confusion_matrix
 from tensorflow.keras.callbacks import History
 
 
-def plot_spectrogram(spectrogram: npt.NDArray):
-    plt.pcolormesh(np.arange(spectrogram.shape[1]),
-                   np.arange(spectrogram.shape[0]),
-                   spectrogram,
-                   shading="nearest",
-                   cmap="viridis")
-    plt.title("Spectrogram")
+def plot_spectrogram(spectrogram: npt.NDArray, title: str = "Spectrogram"):
+    plt.figure(figsize=(3, 3))
+    plt.imshow(spectrogram)
+    plt.title(title)
+    plt.colorbar(label='Magnitude')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
+    plt.title(title)
     plt.show()
 
 
