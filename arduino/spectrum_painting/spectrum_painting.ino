@@ -32,6 +32,9 @@ uint8_t digitizedAugmented[13 * TARGET_RESOLUTION];
 float painted[13 * TARGET_RESOLUTION];
 uint8_t digitizedPainted[13 * TARGET_RESOLUTION];
 
+int8_t realBuffer[SAMPLES];
+int8_t imagBuffer[SAMPLES];
+
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* inputAugmented = nullptr;
@@ -153,12 +156,15 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
       }
     }
 
-    for (int i = 0; i < SAMPLES; i++) {
-      int memIndex = (w * SAMPLES) + i;
+    int memIndex = w * SAMPLES;
 
+    memcpy_P(realBuffer, real + memIndex, SAMPLES);
+    memcpy_P(imagBuffer, imag + memIndex, SAMPLES);
+
+    for (int i = 0; i < SAMPLES; i++) {
       // Don't need to rescale the data. Doing FFT on integers works fine.
-      fftIn[i].r = ((int8_t)pgm_read_byte(real + memIndex));
-      fftIn[i].i = ((int8_t)pgm_read_byte(imag + memIndex));
+      fftIn[i].r = realBuffer[i];
+      fftIn[i].i = imagBuffer[i];
     }
 
     kiss_fft(kssCfg, fftIn, fftOut);
@@ -169,13 +175,13 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
     // outputs the data in the wrong order. The first half of the spectrogram
     // comes out on the second half, and vice versa.
     for (int i = middle; i < NFFT; i++) {
-      float magnitude = sqrt(fftOut[i].r * fftOut[i].r + fftOut[i].i * fftOut[i].i);
+      float magnitude = sqrt(sq(fftOut[i].r) + sq(fftOut[i].i));
 
       cumulative_row[(i - middle)] += magnitude;
     }
 
     for (int i = 0; i < middle; i++) {
-      float magnitude = sqrt(fftOut[i].r * fftOut[i].r + fftOut[i].i * fftOut[i].i);
+      float magnitude = sqrt(sq(fftOut[i].r) + sq(fftOut[i].i));
 
       cumulative_row[(i + middle)] += magnitude;
     }
