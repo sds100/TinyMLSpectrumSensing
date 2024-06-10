@@ -1,11 +1,8 @@
 #include "TensorFlowLite.h"
 
 #include "model.h"
-#include "augmented_image.h"
-#include "painted_image.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
-// #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
 #include "data.h"
@@ -14,7 +11,7 @@
 const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
-const int NUM_WINDOWS = 128;
+const int NUM_WINDOWS = 1024;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -34,40 +31,24 @@ TfLiteTensor* inputAugmented = nullptr;
 TfLiteTensor* inputPainted = nullptr;
 TfLiteTensor* output = nullptr;
 
-constexpr int tensor_arena_size = 100 * 1024;
+constexpr int tensor_arena_size = 50 * 1024;
 byte tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 const int no_classes = 7;
-const char* labels[no_classes] = {
-  "z", "b", "w", "bw", "zb", "zw", "zbw"
-};
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(4000);
-  // wait for serial initialization so printing in setup works.
+  // wait for someone to connect to serial before printing.
   while (!Serial)
     ;
 
   model = tflite::GetModel(output_spectrum_painting_model_tflite);
-
-  // if (model->version() != TFLITE_SCHEMA_VERSION) {
-  //   MicroPrintf(
-  //     "Model provided is schema version %d not equal "
-  //     "to supported version %d.\n",
-  //     model->version(), TFLITE_SCHEMA_VERSION);
-  //   return;
-  // }
 
   tflite::AllOpsResolver resolver;
 
   interpreter = new tflite::MicroInterpreter(model, resolver, tensor_arena, tensor_arena_size);
 
   TfLiteStatus allocate_status = interpreter->AllocateTensors();
-
-  if (allocate_status != kTfLiteOk) {
-    Serial.println("ALLOCATE TENSORS FAILED");
-  }
 
   inputAugmented = interpreter->input(0);
   inputPainted = interpreter->input(1);
