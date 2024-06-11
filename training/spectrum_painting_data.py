@@ -60,6 +60,14 @@ def load_spectrograms(data_dir: str,
         for label in classes:
             data = np.load(f"{data_dir}/SNR{snr}_{label}.npy")
 
+            # Use a step size of 4 to reduce the number of I/Q samples.
+            # This effectively 
+            # This also has the knock-on effect of only outputting
+            # frequencies in the FFT that are between +-22 MHz. This means
+            # the Wi-Fi signal fills the spectrogram.
+            indices = np.arange(0, len(data), step=4)
+            data = data[indices]
+
             samples_per_spectrogram = windows_per_spectrogram * window_length
             spectrogram_count = len(data) // samples_per_spectrogram
 
@@ -67,6 +75,7 @@ def load_spectrograms(data_dir: str,
                 start = i * samples_per_spectrogram
                 end = start + samples_per_spectrogram
                 data_slice = data[start:end]
+
                 spectrogram = create_spectrogram(data_slice, label, windows_per_spectrogram, window_length, nfft)
                 spectrograms[snr].append(spectrogram)
 

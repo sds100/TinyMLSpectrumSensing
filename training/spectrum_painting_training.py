@@ -3,7 +3,6 @@ from typing import List, Dict
 
 import numpy as np
 import numpy.typing as npt
-from skimage.transform import downscale_local_mean
 from sklearn.model_selection import train_test_split
 
 import spectrum_painting as sp
@@ -62,52 +61,17 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
     label_names: List[str] = []
     snr_list: List[int] = []
 
-    removed_image_count: int = 0
-
     for (snr_index, (snr, spectrogram_list)) in enumerate(spectrograms.items()):
         sliced_spectrograms: Dict[str, List[npt.NDArray]] = {}
 
         for spec in spectrogram_list:
             if not sliced_spectrograms.__contains__(spec.label):
                 sliced_spectrograms[spec.label] = []
-
-            # Taking the middle of the spectrogram is not needed if you use
-            # high D (step size) values. The reason why you may need it for small step
-            # sizes is that for painting to remove the WiFi signals, they must fill the
-            # entire width of the spectrogram.
-
-            middle: int = spec.values.shape[1] // 2
-            start_freq: int = middle - 32
-            end_freq: int = middle + 32
-
-            spec = sp.take_frequencies(spec, start_freq, end_freq)
-
             sliced_spectrograms[spec.label].append(spec.values)
 
-        include_indices: List[int] = []
-
-        # Filter out the images that don't actually contain
-        # any Bluetooth signals even though they are labelled as such.
-        # A naive approach is to just see if the Bluetooth-only image
-        # contains (almost) no signals.
-        for (i, s) in enumerate(sliced_spectrograms["B"]):
-            (augmented, painted) = create_augmented_painted_images(s, options)
-
-            mean_painted = np.mean(painted)
-            max_painted = np.max(painted)
-
-            if mean_painted < 5:
-                removed_image_count += 1
-            else:
-                include_indices.append(i)
-
         for label_index, (label, slices) in enumerate(sliced_spectrograms.items()):
-            for i in include_indices:
-                s = slices[i]
+            for s in slices:
                 (augmented, painted) = create_augmented_painted_images(s, options)
-
-                # augmented = downscale_local_mean(augmented, (2, 1))
-                # painted = downscale_local_mean(painted, (2, 1))
 
                 digitized_augmented_slices.append(augmented)
                 digitized_painted_slices.append(painted)
@@ -115,8 +79,6 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
                 snr_list.append(snr)
 
             label_names.append(label)
-
-    print(f"Removed {removed_image_count} images that didn't actually contain any Bluetooth signals.")
 
     x_combined = np.stack((digitized_augmented_slices, digitized_painted_slices), axis=3)
 

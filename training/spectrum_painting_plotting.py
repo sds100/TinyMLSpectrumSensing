@@ -13,8 +13,8 @@ def plot_spectrogram(spectrogram: npt.NDArray, title: str = "Spectrogram"):
     plt.imshow(spectrogram)
     plt.title(title)
     plt.colorbar(label='Magnitude')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
+    plt.xlabel('Frequency')
+    plt.ylabel('Time')
     plt.title(title)
     plt.show()
 

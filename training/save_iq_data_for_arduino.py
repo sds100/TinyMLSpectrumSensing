@@ -1,4 +1,3 @@
-import random
 from typing import List, TextIO
 
 import numpy as np
@@ -8,7 +7,11 @@ import numpy.typing as npt
 def save_iq_data(data: npt.NDArray[np.complex64], windows: int, window_length: int, file: str):
     output_length = windows * window_length
 
-    data_offset = random.Random().randint(0, len(data) - output_length)
+    data_offset = 0
+
+    indices = np.arange(0, len(data), step=4)
+    data = data[indices]
+    
     data = data[data_offset:data_offset + output_length]
 
     max_value = np.max(data).real

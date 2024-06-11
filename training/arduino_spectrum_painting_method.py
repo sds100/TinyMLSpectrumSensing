@@ -5,19 +5,22 @@ import numpy.typing as npt
 from matplotlib import pyplot as plt
 from scipy.fft import fft
 
-file = "../training/data/numpy/SNR30_ZBW.npy"
+file = "data/numpy/SNR10_ZBW.npy"
 data: npt.NDArray[np.complex64] = np.load(file)
+
+indices = np.arange(0, len(data), step=4)
+data = data[indices]
 
 # This file follows the same method as the Arduino for spectrum
 # painting, so it is easier to verify what it is creating
 # is correct.
 
 NUM_WINDOWS = 256
-SAMPLES = 1024
+SAMPLES = 256
 NFFT = 256
 TARGET_RESOLUTION = 64
 
-data_offset = 1000000
+data_offset = 0
 data = data[data_offset:data_offset + (SAMPLES * NUM_WINDOWS)]
 
 fs = 88000000
@@ -43,8 +46,8 @@ for n in data:
 spectrogram_data: npt.NDArray[float] = np.zeros(shape=(NUM_WINDOWS, NFFT))
 
 for w in range(NUM_WINDOWS):
-    start = w * SAMPLES
-    end = start + SAMPLES
+    time_start = w * SAMPLES
+    end = time_start + SAMPLES
 
     fft_input: [complex] = []
 
@@ -69,45 +72,34 @@ for w in range(NUM_WINDOWS):
     for i in range(len(result)):
         spectrogram_data[w][i] = result[i]
 
-spectrogram_slice: npt.NDArray[float] = np.zeros(shape=(NUM_WINDOWS, TARGET_RESOLUTION))
-
-middle: int = NFFT // 2
-start: int = middle - (TARGET_RESOLUTION // 2)
-end: int = middle + (TARGET_RESOLUTION // 2)
-
-for w in range(NUM_WINDOWS):
-    for i in range(TARGET_RESOLUTION - 1):
-        spectrogram_slice[w][i] = spectrogram_data[w][start + i]
-
-scale_factor = NUM_WINDOWS // TARGET_RESOLUTION
+time_scale_factor = NUM_WINDOWS // TARGET_RESOLUTION
+freq_scale_factor = NFFT // TARGET_RESOLUTION
 
 downsampled: npt.NDArray[float] = np.zeros(shape=TARGET_RESOLUTION * TARGET_RESOLUTION)
 
 for i in range(TARGET_RESOLUTION):
-    start = i * scale_factor
+    time_start = i * time_scale_factor
 
     for j in range(TARGET_RESOLUTION):
-        col_sum = 0
+        freq_start = j * freq_scale_factor
+        time_sum = 0
 
-        for k in range(scale_factor):
-            col_sum = col_sum + spectrogram_slice[start + k][j]
+        for k in range(time_scale_factor):
+            freq_sum = 0
 
-        column_scaled = col_sum / scale_factor
+            for m in range(freq_scale_factor):
+                freq_sum += spectrogram_data[time_start + k][freq_start + m]
+
+            time_sum += freq_sum
+
+        column_scaled = time_sum / time_scale_factor
 
         downsampled[i * TARGET_RESOLUTION + j] = column_scaled
 
-# f, t, Zxx = signal.stft(x=data, fs=fs, return_onesided=False, window="hamming", nperseg=64, noverlap=0)
-# Zxx = move_front_half_to_end(Zxx)
-# f = move_front_half_to_end(f)
-# 
-# print(Zxx.shape)
-# # Zxx = fft(data)
-# Zxx_abs = (np.abs(Zxx) ** 2)
-
 plt.imshow(downsampled.reshape((64, 64)))
 plt.colorbar(label='Magnitude')
-plt.xlabel('Time Window')
-plt.ylabel('Frequency Bin')
+plt.xlabel('Frequency Window')
+plt.ylabel('Time Window')
 plt.title('Downsampled spectrogram Python')
 plt.show()
 
@@ -179,8 +171,8 @@ augmented_digitized = digitize(augmented)
 
 plt.imshow(np.asarray(augmented_digitized).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
 plt.colorbar(label='Magnitude')
-plt.xlabel('Time Window')
-plt.ylabel('Frequency Bin')
+plt.xlabel('Frequency Window')
+plt.ylabel('Time Window')
 plt.title('Spectrogram Augmented Python')
 plt.show()
 
@@ -202,7 +194,7 @@ painted_digitized = digitize(painted)
 
 plt.imshow(np.asarray(painted_digitized).reshape((TARGET_RESOLUTION, augmented_freq_bins)))
 plt.colorbar(label='Magnitude')
-plt.xlabel('Time Window')
-plt.ylabel('Frequency Bin')
+plt.xlabel('Frequency Window')
+plt.ylabel('Time Window')
 plt.title('Spectrogram Painted Python')
 plt.show()

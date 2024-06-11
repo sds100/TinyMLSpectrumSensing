@@ -8,10 +8,9 @@
 #include "data.h"
 #include "kiss_fft.h"
 
-const int NUM_WINDOWS = 512;
-const uint16_t SAMPLES = 512;
+const int NUM_WINDOWS = 256;
+const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 256;
-const float SAMPLING_FREQUENCY = 88000000;
 const int TARGET_RESOLUTION = 64;
 
 const int K = 3;
@@ -140,19 +139,19 @@ void loop() {
 
 void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float* out) {
   // DOES LOADING DATA INTO MEMORY SPEED IT UP?
-  float cumulative_row[NFFT];
+  float cumulativeRows[TARGET_RESOLUTION];
 
-  int scaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
+  int timeScaleFactor = NUM_WINDOWS / TARGET_RESOLUTION;
+  int freqScaleFactor = NFFT / TARGET_RESOLUTION;
 
   int downsampledRowCounter = 0;
 
-  int middleFreq = NFFT / 2;
-  int startFreq = middleFreq - 32;
-
   for (int w = 0; w < NUM_WINDOWS; w++) {
-    if (w % scaleFactor == 0) {
-      for (int i = 0; i < NFFT; i++) {
-        cumulative_row[i] = 0;
+    // If we reached the next step in downsampling the rows
+    // then set the sum to 0.
+    if (w % timeScaleFactor == 0) {
+      for (int i = 0; i < TARGET_RESOLUTION; i++) {
+        cumulativeRows[i] = 0;
       }
     }
 
@@ -167,30 +166,51 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
 
     kiss_fft(kssCfg, fftIn, fftOut);
 
-    int middle = NFFT / 2;
+    int middle = TARGET_RESOLUTION / 2;
 
     // I'm not sure why but for my training data, computing the FFT puts
     // outputs the data in the wrong order. The first half of the spectrogram
-    // comes out on the second half, and vice versa.
-    for (int i = middle; i < NFFT; i++) {
-      float magnitude = sqrt(sq(fftOut[i].r) + sq(fftOut[i].i));
+    // comes out on the second half, and vice versa so compute each
+    // half of the spectrogram separately and switch the order.
+    for (int i = middle; i < TARGET_RESOLUTION; i++) {
+      // Downsample the frequency bins to the target resolution.
+      float meanFreq = 0;
 
-      cumulative_row[(i - middle)] += magnitude;
+      for (int j = 0; j < freqScaleFactor; j++){
+        int index = (i * freqScaleFactor) + j;
+        float magnitude = sqrt(sq(fftOut[index].r) + sq(fftOut[index].i));
+        meanFreq += magnitude;
+      }
+
+      meanFreq /= freqScaleFactor;
+
+      cumulativeRows[(i - middle)] += meanFreq;
     }
 
     for (int i = 0; i < middle; i++) {
-      float magnitude = sqrt(sq(fftOut[i].r) + sq(fftOut[i].i));
+      // Downsample the frequency bins to the target resolution.
+      float meanFreq = 0;
 
-      cumulative_row[(i + middle)] += magnitude;
-    }
-
-    if (w != 0 && (w + 1) % scaleFactor == 0) {
-      for (int i = 0; i < NFFT; i++) {
-        cumulative_row[i] = cumulative_row[i] / scaleFactor;
+      for (int j = 0; j < freqScaleFactor; j++){
+        int index = (i * freqScaleFactor) + j;
+        float magnitude = sqrt(sq(fftOut[index].r) + sq(fftOut[index].i));
+        meanFreq += magnitude;
       }
 
-      // Only take the frequencies that are filled by the Wi-Fi signal.
-      memcpy(out + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
+      meanFreq /= freqScaleFactor;
+
+      cumulativeRows[(i + middle)] += meanFreq;
+    }
+
+    // if reached the end of processing a group of rows to
+    // downsample.
+    if (w != 0 && (w + 1) % timeScaleFactor == 0) {
+      // Downsample each freq bin the time row.
+      for (int i = 0; i < TARGET_RESOLUTION; i++) {
+        cumulativeRows[i] = cumulativeRows[i] / timeScaleFactor;
+      }
+
+      memcpy(out + (downsampledRowCounter * TARGET_RESOLUTION), cumulativeRows, TARGET_RESOLUTION * sizeof(float));
       downsampledRowCounter += 1;
     }
   }
