@@ -8,8 +8,8 @@
 #include "data.h"
 #include "kiss_fft.h"
 
-const int NUM_WINDOWS = 256;
-const uint16_t SAMPLES = 1024;
+const int NUM_WINDOWS = 512;
+const uint16_t SAMPLES = 512;
 const uint16_t NFFT = 256;
 const float SAMPLING_FREQUENCY = 88000000;
 const int TARGET_RESOLUTION = 64;
@@ -162,9 +162,7 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
     memcpy_P(imagBuffer, imag + memIndex, SAMPLES);
 
     for (int i = 0; i < SAMPLES; i++) {
-      // Don't need to rescale the data. Doing FFT on integers works fine.
-      fftIn[i].r = realBuffer[i];
-      fftIn[i].i = imagBuffer[i];
+      fftIn[i] = {realBuffer[i], imagBuffer[i]};
     }
 
     kiss_fft(kssCfg, fftIn, fftOut);
@@ -192,7 +190,6 @@ void createDownsampledSpectrogram(const int8_t* real, const int8_t* imag, float*
       }
 
       // Only take the frequencies that are filled by the Wi-Fi signal.
-
       memcpy(out + (downsampledRowCounter * TARGET_RESOLUTION), cumulative_row + startFreq, TARGET_RESOLUTION * sizeof(float));
       downsampledRowCounter += 1;
     }
