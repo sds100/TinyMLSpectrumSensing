@@ -24,7 +24,7 @@ def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDA
     downsampled_spec_values = downscale_local_mean(spectrogram, (freq_factor, time_factor))[:resolution, :resolution]
 
     # make sure the spectrogram is still in the correct orientation
-    downsampled_spec_values = np.flip(downsampled_spec_values, axis=0)
+    # downsampled_spec_values = np.flip(downsampled_spec_values, axis=0)
 
     assert downsampled_spec_values.shape == (resolution, resolution)
     return downsampled_spec_values
