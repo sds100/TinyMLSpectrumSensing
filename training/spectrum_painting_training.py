@@ -37,10 +37,10 @@ def create_augmented_painted_images(spectrogram: npt.NDArray,
         npt.NDArray[np.uint8], npt.NDArray[np.uint8]):
     downsampled = sp.downsample_spectrogram(spectrogram, options.downsample_resolution)
     augmented = sp.augment_spectrogram(downsampled, options.k, options.l, options.d)
-    digitized_augmented = sp.digitize_spectrogram(augmented)
-
     painted = sp.paint_spectrogram(downsampled, augmented)
-    digitized_painted = sp.digitize_spectrogram(painted, )
+
+    digitized_augmented = sp.digitize_spectrogram(augmented)
+    digitized_painted = sp.digitize_spectrogram(painted)
 
     return digitized_augmented, digitized_painted
 

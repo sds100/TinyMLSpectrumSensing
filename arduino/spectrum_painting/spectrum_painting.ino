@@ -73,12 +73,14 @@ void loop() {
   unsigned long timeDownsample = millis();
 
   augment(downsampled, augmented);
-  digitize(augmented, digitizedAugmented);
   unsigned long timeAugment = millis();
 
   paint(downsampled, augmented, painted);
-  digitize(painted, digitizedPainted);
   unsigned long timePaint = millis();
+
+  digitize(augmented, digitizedAugmented);
+  digitize(painted, digitizedPainted);
+  unsigned long timeDigitize = millis();
 
   size_t inputLength = inputAugmented->bytes;
 
@@ -129,7 +131,9 @@ void loop() {
   Serial.println(timeDownsample - timeBegin);
   Serial.println(timeAugment - timeDownsample);
   Serial.println(timePaint - timeAugment);
-  Serial.println(timeInference - timePaint);
+  Serial.println(timeDigitize - timePaint);
+  Serial.println(timeInference - timeDigitize);
+
   Serial.println(timeTotal - timeBegin);
   Serial.println(predictedLabel);
 
