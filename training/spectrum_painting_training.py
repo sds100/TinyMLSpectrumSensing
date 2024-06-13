@@ -46,8 +46,9 @@ def create_augmented_painted_images(spectrogram: npt.NDArray,
 
 
 def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectrogram]],
+                                             label_names: List[str],
                                              options: SpectrumPaintingTrainingOptions,
-                                             test_size: float = 0.3) -> SpectrumPaintingTrainTestSets:
+                                             test_size: float = 0.3, ) -> SpectrumPaintingTrainTestSets:
     """
     Create the training, test and label sets from a list of spectrograms.
     :param spectrograms: A dictionary that maps the class (Z, B, ZBW etc) to spectrograms with different
@@ -58,7 +59,6 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
     digitized_augmented_slices: List[npt.NDArray[np.uint8]] = []
     digitized_painted_slices: List[npt.NDArray[np.uint8]] = []
     labels: List[int] = []
-    label_names: List[str] = []
     snr_list: List[int] = []
 
     for (snr_index, (snr, spectrogram_list)) in enumerate(spectrograms.items()):
@@ -77,8 +77,6 @@ def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectr
                 digitized_painted_slices.append(painted)
                 labels.append(label_index)
                 snr_list.append(snr)
-
-            label_names.append(label)
 
     x_combined = np.stack((digitized_augmented_slices, digitized_painted_slices), axis=3)
 
