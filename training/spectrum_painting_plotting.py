@@ -19,13 +19,13 @@ def plot_spectrogram(spectrogram: npt.NDArray, title: str = "Spectrogram"):
     plt.show()
 
 
-def plot_confusion_matrix(y_predictions: npt.NDArray[np.uint8],
-                          y_test: npt.NDArray[np.uint8],
+def plot_confusion_matrix(y_predictions,
+                          y_test,
                           label_names: List[str]):
     cm = confusion_matrix(y_test, y_predictions)
     cm = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis])
 
-    plt.figure(dpi=80)
+    plt.figure(dpi=160)
     plot = seaborn.heatmap(cm, xticklabels=label_names, yticklabels=label_names, annot=True, cmap='Blues')
     plot.get_figure()
     plt.ylabel('True Label')
