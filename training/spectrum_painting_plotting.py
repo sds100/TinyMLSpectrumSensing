@@ -10,7 +10,7 @@ from tensorflow.keras.callbacks import History
 
 def plot_spectrogram(spectrogram: npt.NDArray, title: str = "Spectrogram"):
     plt.figure(figsize=(3, 3))
-    plt.imshow(spectrogram)
+    plt.imshow(spectrogram, cmap='viridis')
     plt.title(title)
     plt.colorbar(label='Magnitude')
     plt.xlabel('Frequency')
