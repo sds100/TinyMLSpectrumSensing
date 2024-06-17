@@ -5,11 +5,8 @@ tensorflow==2.14.0
 # tensorflow[and-cuda]==2.14.0
 
 # GPU acceleration on MacOS
-# tensorflow-macos==2.14.0
-# tensorflow-metal==1.1.0
-
-# Running TensorFlow Lite models is only supported on Linux.
-# tflite-runtime==2.14.0
+tensorflow-macos==2.14.0
+tensorflow-metal==1.1.0
 
 pandas==2.2.2
 scikit-image==0.23.2
