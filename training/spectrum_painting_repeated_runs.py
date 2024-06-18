@@ -67,7 +67,7 @@ for i in range(training_count):
     full_model = sp_model.create_tensorflow_model(image_shape=image_shape,
                                                   label_count=len(train_test_sets.label_names))
 
-    # sp_model.fit_model(full_model, train_test_sets, epochs=200, early_stopping_patience=20)
+    sp_model.fit_model(full_model, train_test_sets, epochs=200, early_stopping_patience=20)
 
     output_file = f"output/spectrum-painting-model.keras"
     full_model.save(output_file, save_format="keras")
