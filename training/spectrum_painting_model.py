@@ -137,13 +137,13 @@ def convert_to_tensorflow_lite(model: models.Model,
         Convert test images to float32 and the correct dimensions
         for TensorFlow to do full-integer quantization.
         """
-        repr_augmented_images = np.copy(np.asarray(augmented_test_images))
+        repr_augmented_images = np.copy(augmented_test_images)
         repr_augmented_images = [img.astype(np.float32) for img in repr_augmented_images]
 
         for img in repr_augmented_images:
             img.shape += (1,)
 
-        repr_painted_images = np.copy(np.asarray(painted_test_images))
+        repr_painted_images = np.copy(painted_test_images)
         repr_painted_images = [img.astype(np.float32) for img in repr_painted_images]
 
         for img in repr_painted_images:
