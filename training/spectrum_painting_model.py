@@ -27,6 +27,8 @@ def create_channel(input: layers.Input) -> layers.Layer:
 
 
 def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models.Model:
+    tf.keras.backend.clear_session()
+
     # The input shape to the CNN is the height, width and number of color channels. The spectrograms
     # only have one color channel.
     input_shape = (image_shape[0], image_shape[1], 1)
@@ -91,7 +93,8 @@ def fit_model(model: models.Model,
                             [train_test_sets.x_test_augmented, train_test_sets.x_test_painted],
                             train_test_sets.y_test),
                         verbose=0,
-                        batch_size=128, # use higher batch size to increase training speed since we have thousands of training images
+                        batch_size=128,
+                        # use higher batch size to increase training speed since we have thousands of training images
                         callbacks=[CustomCallback(), early_stopping_callback], )
 
     return history
@@ -149,11 +152,8 @@ def convert_to_tensorflow_lite(model: models.Model,
         for img in repr_painted_images:
             img.shape += (1,)
 
-        np.random.shuffle(repr_augmented_images)
-        np.random.shuffle(repr_painted_images)
-
-        repr_augmented_images = (np.expand_dims(repr_augmented_images, 0))
-        repr_painted_images = (np.expand_dims(repr_painted_images, 0))
+        repr_augmented_images = np.expand_dims(repr_augmented_images, 0)
+        repr_painted_images = np.expand_dims(repr_painted_images, 0)
 
         for aug_value, painted_value in list(zip(repr_augmented_images, repr_painted_images)):
             # Model has only one input so each data point has one element.
