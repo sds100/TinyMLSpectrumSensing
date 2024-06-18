@@ -67,7 +67,7 @@ for i in range(training_count):
     full_model = sp_model.create_tensorflow_model(image_shape=image_shape,
                                                   label_count=len(train_test_sets.label_names))
 
-    sp_model.fit_model(full_model, train_test_sets, epochs=200, early_stopping_patience=20)
+    # sp_model.fit_model(full_model, train_test_sets, epochs=200, early_stopping_patience=20)
 
     output_file = f"output/spectrum-painting-model.keras"
     full_model.save(output_file, save_format="keras")
@@ -94,13 +94,13 @@ for i in range(training_count):
                                   zip(test_augmented, test_painted)]
 
         full_model_result = ModelResult(
-            labels=test_labels,
+            labels=test_labels.astype(int).tolist(),
             predictions=full_model_predictions,
             size=full_model_size
         )
 
         lite_model_result = ModelResult(
-            labels=test_labels,
+            labels=test_labels.astype(int).tolist(),
             predictions=lite_model_predictions,
             size=lite_model_size
         )
@@ -115,4 +115,9 @@ for i in range(training_count):
     print("Saving model")
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     with open(f"output/results-{timestamp}.json", "w") as f:
-        json.dump({"results": results}, f)
+        result_dicts = {}
+
+        for (snr, result) in results.items():
+            result_dicts[snr] = result.to_dict()
+
+        json.dump({"results": result_dicts}, f)
