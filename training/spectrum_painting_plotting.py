@@ -25,7 +25,7 @@ def plot_confusion_matrix(y_predictions,
     cm = confusion_matrix(y_test, y_predictions)
     cm = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis])
 
-    plt.figure(dpi=160)
+    plt.figure(dpi=80)
     plot = seaborn.heatmap(cm, xticklabels=label_names, yticklabels=label_names, annot=True, cmap='Blues')
     plot.get_figure()
     plt.ylabel('True Label')

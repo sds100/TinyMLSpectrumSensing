@@ -8,8 +8,8 @@
 #include "data.h"
 #include "kiss_fft.h"
 
-const int NUM_WINDOWS = 64;
-const uint16_t SAMPLES = 1024;
+const int NUM_WINDOWS = 256;
+const uint16_t SAMPLES = 256;
 const uint16_t NFFT = 64;
 const int TARGET_RESOLUTION = 64;
 
