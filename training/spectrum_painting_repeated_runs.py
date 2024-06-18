@@ -115,9 +115,9 @@ for i in range(training_count):
     print("Saving model")
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     with open(f"output/results-{timestamp}.json", "w") as f:
-        result_dicts = {}
+        result_list = []
 
         for (snr, result) in results.items():
-            result_dicts[snr] = result.to_dict()
+            result_list.append(result.to_dict())
 
-        json.dump({"results": result_dicts}, f)
+        json.dump({"results": result_list}, f)
