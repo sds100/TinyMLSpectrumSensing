@@ -2,12 +2,6 @@ import numpy as np
 import numpy.typing as npt
 from skimage.transform import downscale_local_mean
 
-from spectrogram import Spectrogram
-
-
-def take_frequencies(spec: Spectrogram, start: int, end: int) -> Spectrogram:
-    return Spectrogram(values=spec.values.T[start:end].T, label=spec.label)
-
 
 def downsample_spectrogram(spectrogram: npt.NDArray, resolution: int) -> npt.NDArray:
     """
