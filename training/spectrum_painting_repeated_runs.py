@@ -52,6 +52,8 @@ spectrograms = sp_data.load_spectrograms(data_dir="data/numpy",
 
 # Create 10 models, and run inference for each SNR once on each model.
 for i in range(training_count):
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
     print(f"Starting iteration {i}")
     print("Splitting training and test data")
 
@@ -72,7 +74,7 @@ for i in range(training_count):
 
     sp_model.fit_model(full_model, train_test_sets, epochs=100, early_stopping_patience=10)
 
-    output_file = f"output/spectrum-painting-model.keras"
+    output_file = f"output/spectrum-painting-model-{timestamp}.keras"
     full_model.save(output_file, save_format="keras")
     full_model_size = os.stat(output_file).st_size
 
@@ -82,6 +84,11 @@ for i in range(training_count):
                                                      train_test_sets.x_test_augmented,
                                                      train_test_sets.x_test_painted)
     lite_model_size = len(lite_model)
+
+    lite_output_file = f"output/spectrum-painting-model-{timestamp}.tflite"
+
+    with open(lite_output_file, "wb") as f:
+        f.write(lite_model)
 
     for snr in snr_list:
         print(f"Testing SNR: {snr}")
@@ -115,8 +122,7 @@ for i in range(training_count):
         print(f"Full model accuracy = {calc_accuracy(test_labels, full_model_predictions)}")
         print(f"Lite model accuracy = {calc_accuracy(test_labels, lite_model_predictions)}")
 
-    print("Saving model")
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    print("Saving results")
     with open(f"output/results-{timestamp}.json", "w") as f:
         result_list = []
 
