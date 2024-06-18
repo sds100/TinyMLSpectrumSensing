@@ -62,6 +62,9 @@ for i in range(training_count):
         test_size=0.3
     )
 
+    print(f"Number of training images: {len(train_test_sets.y_train)}")
+    print(f"Number of testing images: {len(train_test_sets.y_test)}")
+
     image_shape = train_test_sets.x_train_augmented[0].shape
 
     full_model = sp_model.create_tensorflow_model(image_shape=image_shape,
