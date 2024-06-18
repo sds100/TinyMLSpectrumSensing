@@ -6,7 +6,7 @@ import numpy.typing as npt
 from sklearn.model_selection import train_test_split
 
 import spectrum_painting as sp
-from training.spectrogram import Spectrogram
+from spectrogram import Spectrogram
 
 
 @dataclass

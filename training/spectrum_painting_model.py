@@ -6,7 +6,7 @@ import numpy.typing as npt
 import tensorflow as tf
 from tensorflow.keras import models, layers, losses
 
-from training.spectrum_painting_training import SpectrumPaintingTrainTestSets
+from spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 
 def create_channel(input: layers.Input) -> layers.Layer:

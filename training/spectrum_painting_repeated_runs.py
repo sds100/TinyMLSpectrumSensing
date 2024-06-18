@@ -9,7 +9,7 @@ import spectrum_painting_data as sp_data
 import spectrum_painting_model as sp_model
 import spectrum_painting_predict as sp_predict
 import spectrum_painting_training as sp_training
-from training.result import Result
+from result import Result
 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 

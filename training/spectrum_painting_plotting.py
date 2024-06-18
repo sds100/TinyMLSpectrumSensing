@@ -2,8 +2,8 @@ from typing import List
 
 import numpy as np
 import numpy.typing as npt
-import seaborn
 from matplotlib import pyplot as plt
+from seaborn import heatmap
 from sklearn.metrics import confusion_matrix
 from tensorflow.keras.callbacks import History
 
@@ -26,7 +26,7 @@ def plot_confusion_matrix(y_predictions,
     cm = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis])
 
     plt.figure(dpi=80)
-    plot = seaborn.heatmap(cm, xticklabels=label_names, yticklabels=label_names, annot=True, cmap='Blues')
+    plot = heatmap(cm, xticklabels=label_names, yticklabels=label_names, annot=True, cmap='Blues')
     plot.get_figure()
     plt.ylabel('True Label')
     plt.xlabel('Predicated Label')

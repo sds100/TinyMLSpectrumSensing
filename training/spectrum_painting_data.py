@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.io as sio
 
-from training.spectrogram import Spectrogram, create_spectrogram
+from spectrogram import Spectrogram, create_spectrogram
 
 
 def load_data_from_matlab(file: str) -> npt.NDArray[np.complex128]:
