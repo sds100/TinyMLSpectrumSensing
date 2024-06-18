@@ -10,6 +10,7 @@ tensorflow-metal==1.1.0
 
 pandas==2.2.2
 scikit-image==0.23.2
+imageio==2.34.1
 scikit-learn
 scipy==1.13.0
 numpy==1.26.4
