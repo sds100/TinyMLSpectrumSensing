@@ -78,8 +78,8 @@ for snr in snr_list:
         full_model_labels.append(train_test_sets.y_test.astype(int).tolist())
 
         lite_model = sp_model.convert_to_tensorflow_lite(full_model,
-                                                         train_test_sets.x_test_augmented,
-                                                         train_test_sets.x_test_painted)
+                                                         train_test_sets.x_train_augmented[:100],
+                                                         train_test_sets.x_train_painted[:100])
 
         lite_model_sizes.append(len(lite_model))
 
