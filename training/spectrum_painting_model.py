@@ -91,6 +91,7 @@ def fit_model(model: models.Model,
                             [train_test_sets.x_test_augmented, train_test_sets.x_test_painted],
                             train_test_sets.y_test),
                         verbose=0,
+                        batch_size=128, # use higher batch size to increase training speed since we have thousands of training images
                         callbacks=[CustomCallback(), early_stopping_callback], )
 
     return history
