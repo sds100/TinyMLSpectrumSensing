@@ -1,3 +1,4 @@
+import sys
 from typing import List, TextIO
 
 import numpy as np
@@ -11,7 +12,7 @@ def save_iq_data(data: npt.NDArray[np.complex64], windows: int, window_length: i
 
     indices = np.arange(0, len(data), step=4)
     data = data[indices]
-    
+
     data = data[data_offset:data_offset + output_length]
 
     max_value = np.max(data).real
