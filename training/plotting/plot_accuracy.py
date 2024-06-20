@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 from plotting.plotting_utils import read_results, calc_accuracy
 
-results = read_results("../output/results-10-iterations.json")
+results = read_results("../output/results-filters-2.json")
 
 baseline_accuracy = {
     0: 0.37,
@@ -11,9 +11,9 @@ baseline_accuracy = {
     10: 0.57,
     15: 0.7,
     20: 0.82,
+    25: 0.90,
     30: 0.93
 }
-our_accuracy = []
 
 y_full_accuracy = []
 y_lite_accuracy = []
@@ -60,3 +60,6 @@ plt.xlabel("SNR (dB)")
 plt.legend()
 plt.savefig("../output/figures/bar-chart-accuracy.png")
 plt.show()
+
+average_improvement = np.mean(np.array(y_lite_accuracy) - np.array(y_baseline_accuracy))
+print(f"Average improvement = {average_improvement}")

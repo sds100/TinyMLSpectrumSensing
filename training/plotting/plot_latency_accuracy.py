@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 num_filters = [1, 2, 4, 8]
-inference_latencies = [70, 95, 149, 287]
-inference_accuracies = [0.74, 0.95, 0.97, 0.94]
+inference_latencies = [51, 61, 82, 153]
+inference_accuracies = [0.64, 0.94, 0.96, 0.96]
 
 # Number of categories
 N = len(num_filters)
@@ -13,11 +13,11 @@ width = 0.35  # the width of the bars
 fig, ax1 = plt.subplots(figsize=(5, 4), dpi=160)
 
 # Plotting latency bars
-bars1 = ax1.bar(xs, inference_latencies, width, label='Latency (ms)')
+bars1 = ax1.bar(xs, inference_latencies, width, label='Latency (ms)', color='tomato')
 
 # Creating a second y-axis for accuracy
 ax2 = ax1.twinx()
-bars2 = ax2.bar(xs + width, inference_accuracies, width, label='Accuracy', color='orange')
+bars2 = ax2.bar(xs + width, inference_accuracies, width, label='Accuracy', color='seagreen')
 
 # Adding labels, title, and legend
 ax1.set_xlabel('Number of filters per convolutional layer')

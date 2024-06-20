@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import spectrum_painting_data as sp_data
 from training.spectrum_painting import augment_spectrogram, downsample_spectrogram
 
-snr_list = [-100, -15, -10, -5, 0, 5, 10, 15, 20, 30]
+snr_list = [0, 5, 10, 15, 20, 25, 30]
 
 spectrogram = sp_data.load_spectrograms(data_dir="../data/numpy",
                                         classes=["ZBW"],
@@ -13,11 +13,12 @@ spectrogram = sp_data.load_spectrograms(data_dir="../data/numpy",
                                         window_length=256,
                                         nfft=64)
 
-fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(5, 6), constrained_layout=True)
+fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(5, 6), constrained_layout=True)
 
+axes[-1, -1].axis('off')
 
 def plot_spectrogram(spectrogram: npt.NDArray, index: int, name: str):
-    plt.subplot(2, 5, index)
+    plt.subplot(2, 4, index)
     plt.pcolormesh(spectrogram, cmap='viridis')
     plt.title(name)
     plt.xticks((0, spectrogram.shape[1]))

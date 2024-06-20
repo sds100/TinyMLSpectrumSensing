@@ -8,7 +8,7 @@ num_filters = ["1", "2", "4", "8"]
 snr = 30
 model_sizes = [
     read_results("../output/results-filters-1.json")[snr].lite_model_results[0].size,
-    read_results("../output/results-10-iterations.json")[snr].lite_model_results[0].size,
+    read_results("../output/results-filters-2.json")[snr].lite_model_results[0].size,
     read_results("../output/results-filters-4.json")[snr].lite_model_results[0].size,
     read_results("../output/results-filters-8.json")[snr].lite_model_results[0].size
 ]

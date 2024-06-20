@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 num_filters = [1, 2, 4, 8]
-no_quant_size = [10468, 12836, 21124, 51908]
-no_quant_latency = [39, 78, 172, 420]
+no_quant_size = [6860, 9180, 17372, 47964]
+no_quant_latency = [31, 64, 144, 364]
 
-quant_size = [12016, 12864, 15232, 23576]
-quant_latency = [70, 95, 149, 287]
+quant_size = [7680, 8408, 10776, 19072]
+quant_latency = [51, 61, 82, 153]
 
 # Number of categories
 xs = np.arange(len(num_filters))  # the x locations for the groups
@@ -38,7 +38,7 @@ plt.xlabel("Number of filters per convolutional layer")
 plt.legend()
 
 plt.subplot(1, 2, 2)
-y_ticks = np.arange(61, step=5)
+y_ticks = np.arange(56, step=5)
 
 plt.bar(x=x_axis,
         width=bar_width,
@@ -57,7 +57,6 @@ plt.yticks(y_ticks)
 plt.ylabel("Model size (KB)")
 plt.xlabel("Number of filters per convolutional layer")
 plt.legend()
-
 
 plt.savefig("../output/figures/bar-chart-size-latency.png")
 plt.show()

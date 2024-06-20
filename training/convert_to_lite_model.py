@@ -7,10 +7,10 @@ import spectrum_painting_model as sp_model
 import spectrum_painting_predict as sp_predict
 import spectrum_painting_training as sp_training
 
-full_model = tf.keras.models.load_model('output/spectrum-painting-model-20240620-114301.keras')
+full_model = tf.keras.models.load_model('output/spectrum-painting-model-batch-norm-filters-8-iteration-1.keras')
 
 classes = ["Z", "B", "W", "BW", "ZB", "ZW", "ZBW"]
-snr_list = [-100, -15, -10, -5, 0, 5, 10, 15, 20, 30]
+snr_list = [0, 5, 10, 15, 20, 25, 30]
 
 spectrograms = sp_data.load_spectrograms(data_dir="data/numpy",
                                          classes=classes,

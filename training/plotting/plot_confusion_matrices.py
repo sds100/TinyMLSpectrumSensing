@@ -8,9 +8,9 @@ from sklearn.metrics import confusion_matrix
 from plotting.plotting_utils import read_results, calc_accuracy
 from spectrum_painting_result import SpectrumPaintingResult
 
-results = read_results("../output/results-10-iterations.json")
+results = read_results("../output/results-filters-8.json")
 
-confusion_matrix_snr = -100
+confusion_matrix_snr = 30
 confusion_matrix_result: SpectrumPaintingResult = results[confusion_matrix_snr]
 
 
