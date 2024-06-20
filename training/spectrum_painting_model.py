@@ -178,6 +178,7 @@ def convert_to_tensorflow_lite_no_quantization(model: models.Model):
 
     # This requires TensorFlow <= 2.15.0 for it to work. See https://github.com/tensorflow/tensorflow/issues/63987
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    # converter.optimizations = [tf.lite.Optimize.DEFAULT]    
     return converter.convert()
 
 

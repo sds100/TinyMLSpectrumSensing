@@ -38,7 +38,8 @@ def load_spectrograms(data_dir: str,
                       snr_list: List[int],
                       windows_per_spectrogram: int,
                       window_length: int,
-                      nfft: int) -> Dict[int, List[Spectrogram]]:
+                      nfft: int,
+                      max_spectrograms: int = -1) -> Dict[int, List[Spectrogram]]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -69,7 +70,10 @@ def load_spectrograms(data_dir: str,
             data = data[indices]
 
             samples_per_spectrogram = windows_per_spectrogram * window_length
-            spectrogram_count = len(data) // samples_per_spectrogram
+            spectrogram_count = max_spectrograms
+            
+            if spectrogram_count == -1:
+                spectrogram_count = len(data) // samples_per_spectrogram
 
             for i in range(spectrogram_count):
                 start = i * samples_per_spectrogram
