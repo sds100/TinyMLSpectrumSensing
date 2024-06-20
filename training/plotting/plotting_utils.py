@@ -21,3 +21,9 @@ def read_results(file_name: str) -> Dict[int, SpectrumPaintingResult]:
 
 def calc_accuracy(y_test, predictions) -> float:
     return np.mean(np.asarray(y_test) == np.asarray(predictions))
+
+
+def calc_lite_accuracy_from_file(file: str, snr: int) -> float:
+    result = read_results(file)[snr]
+
+    return calc_accuracy(result.get_all_lite_model_labels(), result.get_all_lite_model_predictions())

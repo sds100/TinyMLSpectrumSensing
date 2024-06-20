@@ -41,7 +41,7 @@ y_ticks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 x_axis = np.arange(len(x_snr))
 
 bar_width = 0.35
-plt.figure(figsize=(4, 4), dpi=160)
+plt.figure(figsize=(5, 4), dpi=160)
 plt.bar(x=x_axis,
         width=bar_width,
         height=y_baseline_accuracy,
