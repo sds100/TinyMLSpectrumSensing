@@ -1,7 +1,8 @@
 import json
 import os
+import sys
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -18,9 +19,22 @@ print("Num GPUs Available: ", len(gpus))
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
+
 def calc_accuracy(y_test, predictions) -> float:
     return np.mean(np.asarray(y_test) == np.asarray(predictions))
 
+
+run_name_arg: Optional[str] = None
+filters: int = 2
+
+if len(sys.argv) > 1:
+    run_name_arg = sys.argv[1]
+
+if len(sys.argv) > 2:
+    filters = int(sys.argv[2])
+    
+print(f"This run is called '{run_name_arg}'")
+print(f"Using {filters} filters")
 
 classes = ["Z", "B", "W", "BW", "ZB", "ZW", "ZBW"]
 snr_list = [-100, -15, -10, -5, 0, 5, 10, 15, 20, 30]
@@ -55,7 +69,12 @@ spectrograms = sp_data.load_spectrograms(data_dir="data/numpy",
 
 # Create 10 models, and run inference for each SNR once on each model.
 for i in range(training_count):
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    run_name: str
+
+    if run_name_arg is None:
+        run_name = datetime.now().strftime("%Y%m%d-%H%M%S")
+    else:
+        run_name = run_name_arg
 
     print(f"Starting iteration {i}")
     print("Splitting training and test data")
@@ -73,11 +92,12 @@ for i in range(training_count):
     image_shape = train_test_sets.x_train_augmented[0].shape
 
     full_model = sp_model.create_tensorflow_model(image_shape=image_shape,
-                                                  label_count=len(train_test_sets.label_names))
+                                                  label_count=len(train_test_sets.label_names),
+                                                  filters=filters)
 
     sp_model.fit_model(full_model, train_test_sets, epochs=100, early_stopping_patience=10)
 
-    output_file = f"output/spectrum-painting-model-{timestamp}.keras"
+    output_file = f"output/spectrum-painting-model-{run_name}.keras"
     full_model.save(output_file, save_format="keras")
     full_model_size = os.stat(output_file).st_size
 
@@ -88,7 +108,7 @@ for i in range(training_count):
                                                      train_test_sets.x_test_painted)
     lite_model_size = len(lite_model)
 
-    lite_output_file = f"output/spectrum-painting-model-{timestamp}.tflite"
+    lite_output_file = f"output/spectrum-painting-model-{run_name}.tflite"
 
     with open(lite_output_file, "wb") as f:
         f.write(lite_model)
@@ -126,7 +146,7 @@ for i in range(training_count):
         print(f"Lite model accuracy = {calc_accuracy(test_labels, lite_model_predictions)}")
 
     print("Saving results")
-    with open(f"output/results-{timestamp}.json", "w") as f:
+    with open(f"output/results-{run_name}.json", "w") as f:
         result_list = []
 
         for (snr, result) in results.items():
