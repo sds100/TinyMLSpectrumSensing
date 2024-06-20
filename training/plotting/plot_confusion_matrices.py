@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 from plotting.plotting_utils import read_results, calc_accuracy
 from spectrum_painting_result import SpectrumPaintingResult
 
-results = read_results("results-filters-4.json")
+results = read_results("../output/results-10-iterations.json")
 
 confusion_matrix_snr = -100
 confusion_matrix_result: SpectrumPaintingResult = results[confusion_matrix_snr]
@@ -41,7 +41,7 @@ def plot_confusion_matrix_standard_deviation(y_test: List[List[int]],
         cm = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis])
         cms.append(cm)
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(dpi=160)
     heatmap(np.std(cms, axis=0), cmap='Blues', annot=True, xticklabels=label_names, yticklabels=label_names,
             cbar=False)
     plt.ylabel('True Label')
