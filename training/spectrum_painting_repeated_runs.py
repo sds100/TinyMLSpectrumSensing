@@ -37,7 +37,7 @@ print(f"This run is called '{run_name_arg}'")
 print(f"Using {filters} filters")
 
 classes = ["Z", "B", "W", "BW", "ZB", "ZW", "ZBW"]
-snr_list = [-100, -15, -10, -5, 0, 5, 10, 15, 20, 30]
+snr_list = [0, 5, 10, 15, 20, 25, 30]
 
 spectrum_painting_options = sp_training.SpectrumPaintingTrainingOptions(
     downsample_resolution=64,
