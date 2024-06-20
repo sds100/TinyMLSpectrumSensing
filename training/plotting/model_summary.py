@@ -1,4 +1,4 @@
+import tensorflow as tf
 
-
-with open("../output/spectrum-painting-model-filters-2.tfliteb") as f:
-    model = f.read()
+model = tf.keras.models.load_model("../output/spectrum-painting-model-filters-2.keras")
+model.summary()

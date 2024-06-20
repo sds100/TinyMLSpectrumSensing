@@ -18,7 +18,7 @@ spectrograms = sp_data.load_spectrograms(data_dir="data/numpy",
                                          windows_per_spectrogram=256,
                                          window_length=256,
                                          nfft=64,
-                                         max_spectrograms=10)
+                                         spectrogram_count=10)
 
 spectrum_painting_options = sp_training.SpectrumPaintingTrainingOptions(
     downsample_resolution=64,

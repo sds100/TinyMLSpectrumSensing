@@ -39,7 +39,7 @@ def load_spectrograms(data_dir: str,
                       windows_per_spectrogram: int,
                       window_length: int,
                       nfft: int,
-                      max_spectrograms: int = -1) -> Dict[int, List[Spectrogram]]:
+                      spectrogram_count: int = -1) -> Dict[int, List[Spectrogram]]:
     """
     Read the time-domain data and convert it to spectrograms.
 
@@ -62,7 +62,6 @@ def load_spectrograms(data_dir: str,
             data = np.load(f"{data_dir}/SNR{snr}_{label}.npy")
 
             # Use a step size of 4 to reduce the number of I/Q samples.
-            # This effectively 
             # This also has the knock-on effect of only outputting
             # frequencies in the FFT that are between +-22 MHz. This means
             # the Wi-Fi signal fills the spectrogram.
@@ -70,8 +69,8 @@ def load_spectrograms(data_dir: str,
             data = data[indices]
 
             samples_per_spectrogram = windows_per_spectrogram * window_length
-            spectrogram_count = max_spectrograms
-            
+            spectrogram_count = spectrogram_count
+
             if spectrogram_count == -1:
                 spectrogram_count = len(data) // samples_per_spectrogram
 

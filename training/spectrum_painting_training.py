@@ -64,7 +64,7 @@ def create_augmented_painted_images(spectrogram: npt.NDArray,
 def create_spectrum_painting_train_test_sets(spectrograms: Dict[int, List[Spectrogram]],
                                              label_names: List[str],
                                              options: SpectrumPaintingTrainingOptions,
-                                             test_size: float = 0.3, ) -> SpectrumPaintingTrainTestSets:
+                                             test_size: float = 0.3) -> SpectrumPaintingTrainTestSets:
     """
     Create the training, test and label sets from a list of spectrograms.
     :param spectrograms: A dictionary that maps the class (Z, B, ZBW etc) to spectrograms with different

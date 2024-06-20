@@ -29,3 +29,8 @@ plt.xlabel("Number of filters per convolutional layer")
 plt.legend()
 plt.savefig("../output/figures/batch-norm-latency.png")
 plt.show()
+
+mean_difference = np.mean(np.array(batch_norm_latency) - np.array(no_batch_norm_latency))
+mean_percent_difference = 1 - np.mean(np.array(no_batch_norm_latency) / np.array(batch_norm_latency))
+print(f"Mean difference = {mean_difference} ms")
+print(f"Mean % difference = {mean_percent_difference}")
