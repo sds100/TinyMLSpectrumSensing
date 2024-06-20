@@ -1,13 +1,13 @@
 jupyter==1.0.0
-tensorflow==2.14.1
+tensorflow==2.15.1
 
-# GPU acceleration with Nvidia
-# tensorflow[and-cuda]==2.14.1
+# GPU acceleration with Nvidia on Cuda 12.2
+# tensorflow[and-cuda]==2.15.1
+# tensorrt==10.1.0
 
 # GPU acceleration on MacOS
-#tensorflow-macos==2.14.1
+#tensorflow-macos==2.15.1
 #tensorflow-metal==1.1.0
-tensorflow-model-optimization==0.8.0
 
 pandas==2.2.2
 scikit-image==0.23.2
