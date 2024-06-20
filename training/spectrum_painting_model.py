@@ -8,21 +8,21 @@ from tensorflow.keras import models, layers, losses, callbacks
 from spectrum_painting_training import SpectrumPaintingTrainTestSets
 
 
-def create_channel(input: layers.Input) -> layers.Layer:
+def create_channel(input: layers.Input, filters: int) -> layers.Layer:
     # Padding "same" adds zero-padding.
-    layer = layers.Conv2D(filters=2, kernel_size=(3, 3), activation='relu', padding='same')(input)
+    layer = layers.Conv2D(filters=filters, kernel_size=(3, 3), activation='relu', padding='same')(input)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=2, kernel_size=(5, 5), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=filters, kernel_size=(5, 5), activation='relu', padding='same')(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
-    layer = layers.Conv2D(filters=2, kernel_size=(7, 7), activation='relu', padding='same')(layer)
+    layer = layers.Conv2D(filters=filters, kernel_size=(7, 7), activation='relu', padding='same')(layer)
     layer = layers.MaxPooling2D((2, 2))(layer)
 
     return layer
 
 
-def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models.Model:
+def create_tensorflow_model(image_shape: (int, int), label_count: int, filters: int = 2) -> models.Model:
     tf.keras.backend.clear_session()
 
     # The input shape to the CNN is the height, width and number of color channels. The spectrograms
@@ -30,10 +30,10 @@ def create_tensorflow_model(image_shape: (int, int), label_count: int) -> models
     input_shape = (image_shape[0], image_shape[1], 1)
 
     augmented_input = layers.Input(shape=input_shape)
-    augmented_channel = create_channel(augmented_input)
+    augmented_channel = create_channel(augmented_input, filters)
 
     painted_input = layers.Input(shape=input_shape)
-    painted_channel = create_channel(painted_input)
+    painted_channel = create_channel(painted_input, filters)
 
     output = layers.Concatenate()([augmented_channel, painted_channel])
 
