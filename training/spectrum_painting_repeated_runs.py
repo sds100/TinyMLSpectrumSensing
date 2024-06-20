@@ -46,7 +46,7 @@ spectrum_painting_options = sp_training.SpectrumPaintingTrainingOptions(
     d=4
 )
 
-training_count = 1
+training_count = 10
 
 results: Dict[int, SpectrumPaintingResult] = {}
 
@@ -112,6 +112,12 @@ for i in range(training_count):
 
     with open(lite_output_file, "wb") as f:
         f.write(lite_model)
+
+    no_quantization_model = sp_model.convert_to_tensorflow_lite_no_quantization(full_model)
+    no_quantization_file = f"output/spectrum-painting-model-{run_name}-no-quant.tflite"
+
+    with open(no_quantization_file, "wb") as f:
+        f.write(no_quantization_model)
 
     for snr in snr_list:
         print(f"Testing SNR: {snr}")
