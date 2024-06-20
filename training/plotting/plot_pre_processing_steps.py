@@ -45,6 +45,7 @@ plot_spectrogram(high_time_resolution_spec, 2, "1024 windows x 64 samples")
 
 fig.supxlabel("Frequency bins")
 fig.supylabel("Time bins")
+plt.savefig("../output/figures/stft-resolution-comparison.png")
 plt.show()
 
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 4), constrained_layout=True)
@@ -54,7 +55,6 @@ plot_spectrogram(downsample_spectrogram(high_time_resolution_spec, 64), 2, "1024
 
 fig.supxlabel("Frequency bins")
 fig.supylabel("Time bins")
-plt.savefig("../output/figures/stft-resolution-comparison.png")
 plt.show()
 
 spec = sp_data.load_spectrograms(data_dir="../data/numpy",
@@ -88,6 +88,20 @@ plot_spectrogram(painted, index=3, name="Painted")
 # fig.tight_layout()
 fig.supxlabel("Frequency bins")
 fig.supylabel("Time bins")
+plt.show()
+
+plt.figure(figsize=(1, 4))
+plt.pcolormesh(spec, cmap='viridis')
+plt.axis("off")
+plt.yticks(None)
+plt.savefig("../output/figures/spectrogram.png")
+plt.show()
+
+plt.figure(figsize=(1, 4))
+plt.pcolormesh(downsampled, cmap='viridis')
+plt.axis("off")
+plt.yticks(None)
+plt.savefig("../output/figures/spectrogram-downsampled.png")
 plt.show()
 
 plt.figure(figsize=(1, 4))
