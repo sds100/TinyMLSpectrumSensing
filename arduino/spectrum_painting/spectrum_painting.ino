@@ -26,10 +26,10 @@ float downsampled[TARGET_RESOLUTION * TARGET_RESOLUTION];
 float downsampledCopy[TARGET_RESOLUTION * TARGET_RESOLUTION];
 
 float augmented[13 * TARGET_RESOLUTION];
-float digitizedAugmented[13 * TARGET_RESOLUTION];
+uint8_t digitizedAugmented[13 * TARGET_RESOLUTION];
 
 float painted[13 * TARGET_RESOLUTION];
-float digitizedPainted[13 * TARGET_RESOLUTION];
+uint8_t digitizedPainted[13 * TARGET_RESOLUTION];
 
 int8_t realBuffer[SAMPLES];
 int8_t imagBuffer[SAMPLES];
@@ -85,11 +85,11 @@ void loop() {
   size_t inputLength = inputAugmented->bytes;
 
   for (unsigned int i = 0; i < inputLength; i++) {
-    inputAugmented->data.f[i] = digitizedAugmented[i];
+    inputAugmented->data.uint8[i] = digitizedAugmented[i];
   }
 
   for (unsigned int i = 0; i < inputLength; i++) {
-    inputPainted->data.f[i] = digitizedPainted[i];
+    inputPainted->data.uint8[i] = digitizedPainted[i];
   }
 
   TfLiteStatus invoke_status = interpreter->Invoke();
@@ -305,7 +305,7 @@ void paint(float* downsampled, float* augmented, float* out) {
   }
 }
 
-void digitize(float* in, float* out) {
+void digitize(float* in, uint8_t* out) {
   // The number of rows in the spectrogram - i.e number of time bins.
   int timeBins = TARGET_RESOLUTION;
   int freqBins = calculateNumAugmentedFreqBins(TARGET_RESOLUTION);
@@ -334,7 +334,7 @@ void digitize(float* in, float* out) {
   for (int t = 0; t < timeBins; t++) {
     for (int f = 0; f < freqBins; f++) {
       int index = (t * freqBins) + f;
-      float value = in[index] * scaleFactor;
+      uint8_t value = (uint8_t)(in[index] * scaleFactor);
 
       out[index] = value;
     }
