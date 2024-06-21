@@ -16,9 +16,12 @@ y_ticks = np.arange(451, step=50)
 
 bar_width = 0.35
 
+plt.rc('axes', axisbelow=True)
+plt.rc('grid', linestyle=":")
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 4), constrained_layout=True, dpi=160)
 
 plt.subplot(1, 2, 1)
+plt.grid(axis="y")
 plt.bar(x=x_axis,
         width=bar_width,
         height=no_quant_latency,
@@ -37,7 +40,10 @@ plt.ylabel("Latency (ms)")
 plt.xlabel("Number of filters per convolutional layer")
 plt.legend()
 
+plt.rc('axes', axisbelow=True)
+plt.rc('grid', linestyle=":")
 plt.subplot(1, 2, 2)
+plt.grid(axis="y")
 y_ticks = np.arange(56, step=5)
 
 plt.bar(x=x_axis,

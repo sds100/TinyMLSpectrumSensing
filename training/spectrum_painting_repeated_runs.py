@@ -28,6 +28,9 @@ run_name_arg: Optional[str] = None
 filters: int = 2
 spectrogram_count: int = -1
 
+number_samples = 65536
+num_windows: int = 256
+
 if len(sys.argv) > 1:
     run_name_arg = sys.argv[1]
 
@@ -37,9 +40,15 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 3:
     spectrogram_count = int(sys.argv[3])
 
+if len(sys.argv) > 4:
+    num_windows = int(sys.argv[4])
+
+window_length: int = number_samples // num_windows
+
 print(f"This run is called '{run_name_arg}'")
 print(f"Using {filters} filters")
 print(f"Creating {spectrogram_count} spectrograms for each SNR and class")
+print(f"Using {num_windows} windows and {window_length} window length")
 
 classes = ["Z", "B", "W", "BW", "ZB", "ZW", "ZBW"]
 snr_list = [0, 5, 10, 15, 20, 25, 30]
@@ -68,8 +77,8 @@ print("Loading spectrograms")
 spectrograms = sp_data.load_spectrograms(data_dir="data/numpy",
                                          classes=classes,
                                          snr_list=snr_list,
-                                         windows_per_spectrogram=256,
-                                         window_length=256,
+                                         windows_per_spectrogram=num_windows,
+                                         window_length=window_length,
                                          nfft=64,
                                          spectrogram_count=spectrogram_count)
 

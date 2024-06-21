@@ -1,10 +1,5 @@
-python3 spectrum_painting_repeated_runs.py specs-50 2 50
-python3 spectrum_painting_repeated_runs.py specs-100 2 100
-python3 spectrum_painting_repeated_runs.py specs-150 2 150
-python3 spectrum_painting_repeated_runs.py specs-200 2 200
-python3 spectrum_painting_repeated_runs.py specs-250 2 250
-python3 spectrum_painting_repeated_runs.py specs-300 2 300
-python3 spectrum_painting_repeated_runs.py specs-350 2 350
-python3 spectrum_painting_repeated_runs.py specs-400 2 400
-python3 spectrum_painting_repeated_runs.py specs-450 2 450
-python3 spectrum_painting_repeated_runs.py specs-500 2 500
+python3 spectrum_painting_repeated_runs.py windows-64 2 -1 64
+python3 spectrum_painting_repeated_runs.py windows-128 2 -1 128
+python3 spectrum_painting_repeated_runs.py windows-256 2 -1 256
+python3 spectrum_painting_repeated_runs.py windows-512 2 -1 512
+python3 spectrum_painting_repeated_runs.py windows-1024 2 -1 1024

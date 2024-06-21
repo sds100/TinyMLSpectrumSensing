@@ -6,7 +6,7 @@ import spectrum_painting_training as sp_training
 from training.spectrum_painting import augment_spectrogram, downsample_spectrogram, paint_spectrogram
 
 classes = ["ZBW"]
-snr = 15
+snr = 30
 
 spectrum_painting_options = sp_training.SpectrumPaintingTrainingOptions(
     downsample_resolution=64,

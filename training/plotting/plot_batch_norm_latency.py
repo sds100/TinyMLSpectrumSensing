@@ -9,7 +9,11 @@ x_axis = np.arange(len(x_filters))
 y_ticks = np.arange(300, step=50)
 
 bar_width = 0.35
+
+plt.rc('axes', axisbelow=True)
+plt.rc('grid', linestyle=":")
 plt.figure(figsize=(5, 4), dpi=160)
+plt.grid(axis="y")
 plt.bar(x=x_axis,
         width=bar_width,
         height=batch_norm_latency,

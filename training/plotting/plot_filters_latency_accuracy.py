@@ -10,7 +10,10 @@ N = len(num_filters)
 xs = np.arange(N)  # the x locations for the groups
 width = 0.35  # the width of the bars
 
+plt.rc('axes', axisbelow=True)
+plt.rc('grid', linestyle=":")
 fig, ax1 = plt.subplots(figsize=(5, 4), dpi=160)
+plt.grid(axis="y")
 
 # Plotting latency bars
 bars1 = ax1.bar(xs, inference_latencies, width, label='Latency (ms)', color='tomato')

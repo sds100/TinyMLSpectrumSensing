@@ -15,7 +15,10 @@ model_sizes = [
 
 xs = np.arange(len(num_filters))  # the x locations for the groups
 
+plt.rc('axes', axisbelow=True)
+plt.rc('grid', linestyle=":")
 plt.figure(figsize=(5, 4), dpi=160)
+plt.grid(axis="y")
 plt.bar(xs, np.array(model_sizes) / 1000)
 
 plt.xlabel('Number of filters per convolutional layer')
