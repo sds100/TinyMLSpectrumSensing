@@ -88,6 +88,7 @@ plot_spectrogram(painted, index=3, name="Painted")
 # fig.tight_layout()
 fig.supxlabel("Frequency bins")
 fig.supylabel("Time bins")
+plt.savefig("../output/figures/raw-augmented-painted.png")
 plt.show()
 
 plt.figure(figsize=(1, 4))
