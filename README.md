@@ -1,5 +1,7 @@
 # Spectrum sensing on Arduino with a Convolutional Neural Network
 
+The paper can be found ![here](https://github.com/sds100/TinyMLSpectrumSensing/blob/main/tinyml-empowered-spectrum-sensing-paper.pdf).
+
 This project is split into two for the training with Python in the `training` folder and doing inference on the Arduino in the `arduino` folder.
 
 ## Setup
